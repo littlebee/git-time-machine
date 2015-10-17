@@ -10,7 +10,7 @@ class GitTimeMachineView
 
 
   setFile: (file) ->
-    render(file)
+    @render(file)
 
 
   render: (@file) ->
@@ -43,3 +43,5 @@ class GitTimeMachineView
   _renderTimeline: () ->
       GitUtils.getFileCommitHistory @file, (commits) =>
         @$element.html("<div class='git-time-machine'>this is where the timeline goes.  there have been #{commits.length} commits to this file</div>")
+        return
+      return

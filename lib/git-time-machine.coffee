@@ -1,5 +1,5 @@
 GitTimeMachineView = require './git-time-machine-view'
-{CompositeDisposable} = require 'atom'
+{TextEditor, CompositeDisposable} = require 'atom'
 
 module.exports = GitTimeMachine =
   gitTimeMachineView: null
@@ -16,20 +16,29 @@ module.exports = GitTimeMachine =
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'git-time-machine:open': => @open()
+    atom.workspace.onDidChangeActivePaneItem (editor) => @_onDidChangeActivePaneItem()
+
 
   deactivate: ->
     @timelinePanel.destroy()
     @subscriptions.dispose()
     @gitTimeMachineView.destroy()
 
+
   serialize: ->
     gitTimeMachineViewState: @gitTimeMachineView.serialize()
 
+
   open: ->
     console.log 'GitTimeMachine was opened!'
-
 
     if @timelinePanel.isVisible()
       @timelinePanel.hide()
     else
       @timelinePanel.show()
+
+
+  _onDidChangeActivePaneItem: (editor) ->
+    editor = atom.workspace.getActiveTextEditor()
+    @gitTimeMachineView.setFile(editor?.getPath())
+    return
