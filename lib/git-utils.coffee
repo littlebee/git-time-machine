@@ -12,28 +12,33 @@ GitUtils = exports
 # with line stats
 GitUtils.getFileCommitHistory = (fileName, callback)->
   logItems = []
-  commitObj = null
-
-  stdout = (output) ->
-    logLines = output.split("\n")
-    for line in logLines
-      if line[0] == '{'
-        commitObj = JSON.parse(line)
-        logItems.push commitObj
-      else if commitObj? && (matches = line.match(/^(\d+)\s*(\d+).*/))
-        # git log --num-stat appends line stats on separate line
-        commitObj.linesAdded = Number.parseInt(matches[1])
-        commitObj.linesDeleted = Number.parseInt(matches[2])
-    return
-
-  exit = (code) =>
-    if code is 0 and logItems.length isnt 0
-      callback logItems
-    else
-      callback []
-    return
-
+  lastCommitObj = null
+  stdout = (output) -> lastCommitObj = GitUtils._parseGitLogOutput(output, lastCommitObj, logItems)
+  exit = (code) -> GitUtils._onFinishedParse(code, logItems, callback)
   return GitUtils._fetchFileHistory(fileName, stdout, exit)
+
+
+# Implementation
+
+GitUtils._parseGitLogOutput = (output, lastCommitObj, logItems) ->
+  logLines = output.split("\n")
+  for line in logLines
+    if line[0] == '{'
+      lastCommitObj = JSON.parse(line)
+      logItems.push lastCommitObj
+    else if lastCommitObj? && (matches = line.match(/^(\d+)\s*(\d+).*/))
+      # git log --num-stat appends line stats on separate line
+      lastCommitObj.linesAdded = Number.parseInt(matches[1])
+      lastCommitObj.linesDeleted = Number.parseInt(matches[2])
+  return lastCommitObj
+
+
+GitUtils._onFinishedParse = (code, logItems, callback) ->
+  if code is 0 and logItems.length isnt 0
+    callback logItems
+  else
+    callback []
+  return
 
 
 GitUtils._fetchFileHistory = (fileName, stdout, exit) ->

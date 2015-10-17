@@ -25,6 +25,7 @@ class GitTimeMachineView
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
+    return null
 
 
   # Tear down any state and detach
@@ -42,6 +43,6 @@ class GitTimeMachineView
 
   _renderTimeline: () ->
       GitUtils.getFileCommitHistory @file, (commits) =>
-        @$element.html("<div class='git-time-machine'>this is where the timeline goes.  there have been #{commits.length} commits to this file</div>")
+        @$element.html("<div class='timeline'>this is where the timeline goes.  there have been <span class='total-commits'>#{commits.length}</span> commits to this file</div>")
         return
       return
