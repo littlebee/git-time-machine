@@ -1,0 +1,21 @@
+{
+  "name": "git-time-machine",
+  "main": "./lib/git-time-machine",
+  "version": "0.0.0",
+  "description": "A short description of your package",
+  "keywords": [
+  ],
+  "activationCommands": {
+    "atom-workspace": "git-time-machine:open"
+  },
+  "repository": "https://github.com/atom/git-time-machine",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+    "underscore-plus": "1.x",
+    "atom-space-pen-views": "^2.0.3",
+    "jquery": "^2.1.3"
+  }
+}
