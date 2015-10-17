@@ -15,7 +15,7 @@ GitUtils.getFileCommitHistory = (fileName, callback)->
   commitObj = null
 
   stdout = (output) ->
-    logLines = logItems.concat output.split("\n")
+    logLines = output.split("\n")
     for line in logLines
       if line[0] == '{'
         commitObj = JSON.parse(line)
@@ -33,14 +33,14 @@ GitUtils.getFileCommitHistory = (fileName, callback)->
       callback []
     return
 
-  GitUtils._fetchFileHistory(fileName, stdout, exit)
+  return GitUtils._fetchFileHistory(fileName, stdout, exit)
 
 
 GitUtils._fetchFileHistory = (fileName, stdout, exit) ->
   format = """{"id": "%H", "authorName": "%an", "relativeDate": "%cr", "authorDate": %at, """ +
     """ "message": "%s", "body": "%b", "hash": "%h"}"""
 
-  new BufferedProcess {
+  return new BufferedProcess {
     command: "git",
     args: [
       "-C",
