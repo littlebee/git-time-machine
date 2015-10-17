@@ -6,5 +6,6 @@ This line was originally on the first commit and changed on the third commit
 
 This line added on the second commit
 This line added on the third commit
+This line added on the forth commit
 
 ###
