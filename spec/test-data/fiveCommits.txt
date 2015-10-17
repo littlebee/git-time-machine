@@ -1,0 +1,7 @@
+###
+
+This file has been committed 5 times. This is used to test the parsing of git log messages by git-time-machine.
+
+This line will be overwritten on a later commit (was part of first commit)
+
+###
