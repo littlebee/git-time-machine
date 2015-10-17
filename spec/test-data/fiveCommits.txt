@@ -4,4 +4,6 @@ This file has been committed 5 times. This is used to test the parsing of git lo
 
 This line will be overwritten on a later commit (was part of first commit)
 
+This line added on the second commit
+
 ###
