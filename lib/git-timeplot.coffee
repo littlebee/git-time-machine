@@ -128,6 +128,7 @@ module.exports = class GitTimeplot
 
 
   _renderPopup: () ->
+    # reposition the marker to match the position of the current popup
     if @popup?.isMouseInPopup()
       left = @popup.offset().left - @$element.offset().left
       if @_popupRightAligned
