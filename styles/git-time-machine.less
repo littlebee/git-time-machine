@@ -5,4 +5,36 @@
 @import "ui-variables";
 
 .git-time-machine {
+  .timeplot {
+    .placeholder {
+      height: 100px;
+      text-align: center;
+      vertical-align: middle;
+    }
+  }
+
+  .axis path,
+  .axis line {
+      fill: none;
+      stroke: #eee;
+      shape-rendering: crispEdges;
+  }
+
+  .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+      fill: @text-color-subtle;
+  }
+
+  .loading {
+      font-family: sans-serif;
+      font-size: 15px;
+  }
+
+  .circle {
+      fill: @text-color-highlight;
+      opacity: .5;
+  }
+
+
 }

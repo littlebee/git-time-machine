@@ -23,9 +23,17 @@ GitUtils.getFileCommitHistory = (fileName, callback)->
 GitUtils._parseGitLogOutput = (output, lastCommitObj, logItems) ->
   logLines = output.split("\n")
   for line in logLines
-    if line[0] == '{'
-      lastCommitObj = JSON.parse(line)
-      logItems.push lastCommitObj
+    if line[0] == '{' && line[line.length-1] == '}'
+      lastCommitObj = GitUtils._parseCommitObj(line)
+      logItems.push lastCommitObj if lastCommitObj
+    else if line[0] == '{'
+      # this will happen when there are newlines in the commit message
+      lastCommitObj = line
+    else if _.isString(lastCommitObj)
+      lastCommitObj += line
+      if line[line.length-1] == '}'
+        lastCommitObj = GitUtils._parseCommitObj(lastCommitObj)
+        logItems.push lastCommitObj if lastCommitObj
     else if lastCommitObj? && (matches = line.match(/^(\d+)\s*(\d+).*/))
       # git log --num-stat appends line stats on separate line
       lastCommitObj.linesAdded = Number.parseInt(matches[1])
@@ -33,6 +41,21 @@ GitUtils._parseGitLogOutput = (output, lastCommitObj, logItems) ->
   return lastCommitObj
 
 
+GitUtils._parseCommitObj = (line) ->
+  encLine = line.replace(/\t/g, '  ') # tabs mess with JSON parse
+  .replace(/\"/g, "'")           # sorry, can't parse with quotes in body or message
+  .replace(/(\n|\n\r)/g, '<br>')
+  .replace(/\r/g, '<br>')
+  .replace(/\#\/dquotes\//g, '"')
+  try
+    return JSON.parse(encLine)
+  catch
+    console.warn "failed to parse JSON #{encLine}"
+    return null
+
+
+
+# note this is spied on by unit test. See spec/git-utils-spec.coffee
 GitUtils._onFinishedParse = (code, logItems, callback) ->
   if code is 0 and logItems.length isnt 0
     callback logItems
@@ -42,8 +65,8 @@ GitUtils._onFinishedParse = (code, logItems, callback) ->
 
 
 GitUtils._fetchFileHistory = (fileName, stdout, exit) ->
-  format = """{"id": "%H", "authorName": "%an", "relativeDate": "%cr", "authorDate": %at, """ +
-    """ "message": "%s", "body": "%b", "hash": "%h"}"""
+  format = ("""{"id": "%H", "authorName": "%an", "relativeDate": "%cr", "authorDate": %at, """ +
+    """ "message": "%s", "body": "%b", "hash": "%h"}""").replace(/\"/g, "#/dquotes/")
 
   return new BufferedProcess {
     command: "git",
@@ -54,7 +77,7 @@ GitUtils._fetchFileHistory = (fileName, stdout, exit) ->
       "--pretty=format:#{format}",
       "--topo-order",
       "--date=local",
-      "--numstat"
+      "--numstat",
       fileName
     ],
     stdout,

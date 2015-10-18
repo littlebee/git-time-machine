@@ -2,6 +2,7 @@ $ = jQuery = require('jquery')
 _ = require('underscore-plus')
 
 GitUtils = require './git-utils'
+GitTimeplot = require './git-timeplot'
 
 module.exports =
 class GitTimeMachineView
@@ -18,6 +19,7 @@ class GitTimeMachineView
     unless @file?
       @_renderPlaceholder()
     else
+      @$element.text("")
       @_renderTimeline()
 
     return @$element
@@ -30,19 +32,29 @@ class GitTimeMachineView
 
   # Tear down any state and detach
   destroy: ->
-    @$element.remove()
+    return @$element.remove()
 
 
   getElement: ->
-    @$element.get(0)
+    return @$element.get(0)
 
 
   _renderPlaceholder: () ->
     @$element.html("<div class='placeholder'>Select a file in the git repo to see timeline</div>")
-
+    return
 
   _renderTimeline: () ->
-      GitUtils.getFileCommitHistory @file, (commits) =>
-        @$element.html("<div class='timeline'>this is where the timeline goes.  there have been <span class='total-commits'>#{commits.length}</span> commits to this file</div>")
-        return
+    @timeplot = new GitTimeplot(@$element)
+    GitUtils.getFileCommitHistory @file, (commits) =>
+      @timeplot.render(commits)
+      @_renderStats(commits)
       return
+    return
+
+  _renderStats: (commits) ->
+    @$element.append """
+      <div class='stats'>
+        <span class='total-commits'>#{commits.length}</span> total commits
+      </div>
+    """
+    return
