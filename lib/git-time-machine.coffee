@@ -32,14 +32,14 @@ module.exports = GitTimeMachine =
   open: ->
     # console.log 'GitTimeMachine was opened!'
     if @timelinePanel.isVisible()
+      @gitTimeMachineView.hide()
       @timelinePanel.hide()
     else
       @timelinePanel.show()
+      @gitTimeMachineView.show()
 
 
   _onDidChangeActivePaneItem: (editor) ->
     editor = atom.workspace.getActiveTextEditor()
     @gitTimeMachineView.setFile(editor?.getPath())
     return
-
-    

@@ -35,6 +35,14 @@ class GitTimeMachineView
     return @$element.remove()
 
 
+  hide: ->
+    @timeplot?.hide()   # so it knows to hide the popup
+
+
+  show: ->
+    @timeplot?.show()
+
+
   getElement: ->
     return @$element.get(0)
 
@@ -44,12 +52,13 @@ class GitTimeMachineView
     return
 
   _renderTimeline: () ->
-    @timeplot = new GitTimeplot(@$element)
+    @timeplot ||= new GitTimeplot(@$element)
     GitUtils.getFileCommitHistory @file, (commits) =>
       @timeplot.render(commits)
       @_renderStats(commits)
       return
     return
+
 
   _renderStats: (commits) ->
     @$element.append """
