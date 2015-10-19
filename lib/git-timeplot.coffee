@@ -139,7 +139,8 @@ module.exports = class GitTimeplot
     return unless @isMouseInElement
 
     @popup?.hide().remove()
-    @popup = new GitTimeplotPopup(@commitData)
+    [commits, start, end] = @_filterCommitData(@commitData)
+    @popup = new GitTimeplotPopup(commits, start, end)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
@@ -156,6 +157,16 @@ module.exports = class GitTimeplot
   _hidePopup: () ->
     return if @popup?.isMouseInPopup() || @isMouseInElement
     @popup?.hide().remove()
+
+
+  _filterCommitData: () ->
+    left = @$hoverMarker.offset().left
+    relativeLeft = left - @$element.offset().left - 5
+    tStart = moment(@x.invert(relativeLeft)).startOf('hour').subtract(1, 'minute')
+    tEnd = moment(@x.invert(relativeLeft + 10)).endOf('hour').add(1, 'minute')
+    commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
+    console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
+    return [commits, tStart, tEnd];
 
 
 
