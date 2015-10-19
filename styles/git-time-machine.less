@@ -33,7 +33,7 @@
 
   .circle {
       fill: @text-color-highlight;
-      opacity: .5;
+      opacity: .3;
   }
 
   .hover-marker {
@@ -61,6 +61,12 @@
     background-color: @inset-panel-background-color;
     margin-bottom: 4px;
     padding: 3px 4px;
+    white-space: pre-wrap;
+
+    &:hover {
+      background-color: @background-color-selected;
+
+    }
   }
 
 }
