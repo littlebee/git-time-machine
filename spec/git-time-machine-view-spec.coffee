@@ -1,5 +1,5 @@
 
-$ = jQuery = require 'jquery'
+{$, View} = require "atom-space-pen-views"
 
 GitTimeMachineView = require '../lib/git-time-machine-view'
 GitUtils = require '../lib/git-utils'

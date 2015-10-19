@@ -1,5 +1,5 @@
 
-$ = jQuery = require 'jquery'
+{$, View} = require "atom-space-pen-views"
 _ = require 'underscore-plus'
 moment = require 'moment'
 d3 = require 'd3'
@@ -165,7 +165,7 @@ module.exports = class GitTimeplot
     tStart = moment(@x.invert(relativeLeft)).startOf('hour').subtract(1, 'minute')
     tEnd = moment(@x.invert(relativeLeft + 10)).endOf('hour').add(1, 'minute')
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
-    console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
+    # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
 
 

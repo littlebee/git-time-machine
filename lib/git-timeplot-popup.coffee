@@ -28,13 +28,13 @@ module.exports = class GitTimeplotPopup extends View
 
 
   _onMouseEnter: (evt) =>
-    console.log 'mouse in popup'
+    # console.log 'mouse in popup'
     @_mouseInPopup = true
     return
 
 
   _onMouseLeave: (evt) =>
-    console.log 'mouse leave popup'
+    # console.log 'mouse leave popup'
     @_mouseInPopup = false
     @hide()
     return

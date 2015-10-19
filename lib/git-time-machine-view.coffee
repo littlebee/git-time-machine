@@ -1,4 +1,4 @@
-$ = jQuery = require('jquery')
+{$, View} = require "atom-space-pen-views"
 _ = require('underscore-plus')
 
 GitUtils = require './git-utils'
