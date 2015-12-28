@@ -7,7 +7,7 @@ _ = require 'underscore-plus'
 
 module.exports = class GitTimeplotPopup extends View
 
-  @content = (commitData, start, end) ->
+  @content = (commitData, file, start, end) ->
     dateFormat = "MMM DD YYYY ha"
     @div class: "select-list popover-list git-timemachine-popup", =>
       @div class: "controls", =>
@@ -35,9 +35,8 @@ module.exports = class GitTimeplotPopup extends View
               @div "Authored by #{commit.authorName} #{authorDate.fromNow()}"
 
 
-  initialize: (commitData) ->
+  initialize: (commitData, @file) ->
     @appendTo atom.views.getView atom.workspace
-    @file = atom.workspace.getActiveTextEditor()?.getPath()
     @mouseenter @_onMouseEnter
     @mouseleave @_onMouseLeave
 
@@ -87,9 +86,9 @@ module.exports = class GitTimeplotPopup extends View
 
     exit = (code) =>
       if code is 0
-        outputDir = "#{atom.getConfigDirPath()}/.git-history"
+        outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
         fs.mkdir outputDir if not fs.existsSync outputDir
-        outputFilePath = "#{outputDir}/#{revHash}-#{path.basename(@file)}"
+        outputFilePath = "#{outputDir}/TimeMachine-#{path.basename(@file)}"
         outputFilePath += ".diff" if options.diff
         fs.writeFile outputFilePath, fileContents, (error) =>
           if not error

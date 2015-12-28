@@ -1,5 +1,7 @@
 {$, View} = require "atom-space-pen-views"
+path = require('path')
 _ = require('underscore-plus')
+str = require('bumble-strings')
 
 GitUtils = require './git-utils'
 GitTimeplot = require './git-timeplot'
@@ -11,7 +13,10 @@ class GitTimeMachineView
 
 
   setFile: (file) ->
-    @render(file)
+    return unless file? 
+    # don't rerender for our commit view
+    unless str.startsWith(path.basename(file), "TimeMachine-")
+      @render(file)
 
 
   render: (@file) ->
@@ -52,7 +57,7 @@ class GitTimeMachineView
     return
 
   _renderTimeline: () ->
-    @timeplot ||= new GitTimeplot(@$element)
+    @timeplot ||= new GitTimeplot(@$element, @file)
     GitUtils.getFileCommitHistory @file, (commits) =>
       @timeplot.render(commits)
       @_renderStats(commits)

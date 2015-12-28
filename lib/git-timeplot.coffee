@@ -10,7 +10,7 @@ GitTimeplotPopup = require './git-timeplot-popup'
 
 module.exports = class GitTimeplot
 
-  constructor: (@element) ->
+  constructor: (@element, @file) ->
     @$element = $(@element)
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
@@ -140,7 +140,7 @@ module.exports = class GitTimeplot
 
     @popup?.hide().remove()
     [commits, start, end] = @_filterCommitData(@commitData)
-    @popup = new GitTimeplotPopup(commits, start, end)
+    @popup = new GitTimeplotPopup(commits, @file, start, end)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
