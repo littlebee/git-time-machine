@@ -106,6 +106,8 @@ module.exports = class GitTimeplot
     @$element.mouseenter (e) -> _this._onMouseenter(e)
     @$element.mousemove (e) -> _this._onMousemove(e)
     @$element.mouseleave (e) -> _this._onMouseleave(e)
+    @$element.mousedown (e) -> _this._onMousedown(e)
+    @$element.mouseup (e) -> _this._onMouseup(e)
 
 
   _onMouseenter: (evt) ->
@@ -125,6 +127,14 @@ module.exports = class GitTimeplot
     @isMouseInElement = false
     # debouncing gives a little time to get the mouse into the popup
     @_debouncedHidePopup();
+    @isMouseDown = false
+    
+  _onMousedown: (evt) ->
+    @isMouseDown = true
+    
+  
+  _onMouseup: (evt) ->
+    @isMouseDown = false
 
 
   _renderPopup: () ->

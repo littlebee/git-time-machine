@@ -48,7 +48,7 @@
 }
 
 .git-timemachine-popup {
-  &.select-list.popover-list {
+  &.popover-list {
     position: absolute;
     z-index: 10;
     width: 400px;
@@ -60,26 +60,35 @@
   .controls {
     float: right;
   }
+  ul {
+    list-style-type: none;
+  }
 
-  li .commit {
-    background-color: @inset-panel-background-color;
-    margin-bottom: 4px;
-    padding: 3px 4px;
-    white-space: pre-wrap;
+  li {
+    .commit {
+      background-color: @inset-panel-background-color;
+      margin-left: -35px;
+      margin-bottom: 4px;
+      padding: 3px 4px;
+      white-space: pre-wrap;
 
-    &:hover {
-      background-color: @background-color-selected;
+      &:hover {
+        background-color: @background-color-selected;
 
-    }
+      }
 
-   .header {
-      width: 100%;
-      overflow: hidden;
       > div {
-        display: inline-block;
-        width: 30%;
+        margin-bottom: 4px;
+      }
+
+      .header {
+        width: 100%;
+        overflow: hidden;
+        > div {
+          display: inline-block;
+          width: 30%;
+        }
       }
     }
   }
-
 }

@@ -1,9 +1,8 @@
-path = require "path"
 moment = require 'moment'
-fs = require 'fs'
-_ = require 'underscore-plus'
 {$, View} = require "atom-space-pen-views"
-{BufferedProcess} = require "atom"
+
+RevisionView = require './git-revision-view'
+
 
 module.exports = class GitTimeplotPopup extends View
 
@@ -15,7 +14,7 @@ module.exports = class GitTimeplotPopup extends View
         @input type: "checkbox", outlet: "showDiffCheck"
       @h5 "There were #{commitData.length} commits between"
       @h6 "#{start.format(dateFormat)} and #{end.format(dateFormat)}"
-      @ul class: "list-group", =>
+      @ul =>
         for commit in commitData
           authorDate = moment.unix(commit.authorDate)
           linesAdded = commit.linesAdded || 0
@@ -68,74 +67,5 @@ module.exports = class GitTimeplotPopup extends View
 
   _onShowRevision: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
-    @showRevision(revHash, diff: @showDiffCheck.is(':checked'))
+    RevisionView.showRevision(@file, revHash, diff: @showDiffCheck.is(':checked'))
 
-  ###
-    The following lines shamelessly stolen from git-history package,  lib/git-history-view
-    with modifications:
-    - show diff is check box on the popup, not a config
-
-  ###
-  showRevision: (revHash, options={}) ->
-    options = _.defaults options,
-      diff: false
-
-    fileContents = ""
-    stdout = (output) =>
-        fileContents += output
-
-    exit = (code) =>
-      if code is 0
-        outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
-        fs.mkdir outputDir if not fs.existsSync outputDir
-        outputFilePath = "#{outputDir}/TimeMachine-#{path.basename(@file)}"
-        outputFilePath += ".diff" if options.diff
-        fs.writeFile outputFilePath, fileContents, (error) =>
-          if not error
-              atom.workspace.open outputFilePath, 
-                split: "right"
-                activatePane: true
-                activateItem: true
-                searchAllPanes: true
-                initialLine: @_getInitialLineNumber()
-      else
-        atom.notifications.addError "Could not retrieve history for #{path.basename(@file)}"
-
-    @_loadRevision revHash, stdout, exit
-
-
-  _loadRevision: (hash, stdout, exit, options={}) ->
-    options = _.defaults options,
-      diff: false;
-
-    repo = r for r in atom.project.getRepositories() when @file.replace(/\\/g, '/').indexOf(r?.repo.workingDirectory) != -1
-    diffArgs = [
-      "-C",
-      repo.repo.workingDirectory,
-      "diff",
-      "-U9999999",
-      "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}",
-      "#{atom.project.relativize(@file).replace(/\\/g, '/')}"
-    ]
-    showArgs = [
-      "-C",
-      path.dirname(@file),
-      "show",
-      "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}"
-    ]
-    new BufferedProcess {
-      command: "git",
-      args: if options.diff then diffArgs else showArgs,
-      stdout,
-      exit
-    }
-
-
-  _getInitialLineNumber: () ->
-    editor = atom.workspace.getActiveTextEditor()
-    editorEle = atom.views.getView editor
-    lineNumber = 0
-    if editor? && editor != '' 
-      lineNumber = editorEle.getLastVisibleScreenRow()
-
-    return lineNumber
