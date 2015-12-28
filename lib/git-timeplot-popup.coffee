@@ -41,6 +41,16 @@ module.exports = class GitTimeplotPopup extends View
     @mouseenter @_onMouseEnter
     @mouseleave @_onMouseLeave
 
+    
+  hide: () =>
+    @_mouseInPopup = false
+    super
+
+
+  remove: () =>
+    unless @_mouseInPopup
+      super
+
 
   isMouseInPopup: () =>
     return @_mouseInPopup == true
@@ -53,8 +63,6 @@ module.exports = class GitTimeplotPopup extends View
 
 
   _onMouseLeave: (evt) =>
-    # console.log 'mouse leave popup'
-    @_mouseInPopup = false
     @hide()
     return
 
@@ -78,17 +86,21 @@ module.exports = class GitTimeplotPopup extends View
         fileContents += output
 
     exit = (code) =>
-        if code is 0
-            outputDir = "#{atom.getConfigDirPath()}/.git-history"
-            fs.mkdir outputDir if not fs.existsSync outputDir
-            outputFilePath = "#{outputDir}/#{revHash}-#{path.basename(@file)}"
-            outputFilePath += ".diff" if options.diff
-            fs.writeFile outputFilePath, fileContents, (error) ->
-                if not error
-                    options = {split: "right", activatePane: yes}
-                    atom.workspace.open(outputFilePath, options)
-        else
-            atom.notifications.addError "Could not retrieve history for #{path.basename(@file)}"
+      if code is 0
+        outputDir = "#{atom.getConfigDirPath()}/.git-history"
+        fs.mkdir outputDir if not fs.existsSync outputDir
+        outputFilePath = "#{outputDir}/#{revHash}-#{path.basename(@file)}"
+        outputFilePath += ".diff" if options.diff
+        fs.writeFile outputFilePath, fileContents, (error) =>
+          if not error
+              atom.workspace.open outputFilePath, 
+                split: "right"
+                activatePane: true
+                activateItem: true
+                searchAllPanes: true
+                initialLine: @_getInitialLineNumber()
+      else
+        atom.notifications.addError "Could not retrieve history for #{path.basename(@file)}"
 
     @_loadRevision revHash, stdout, exit
 
@@ -99,22 +111,32 @@ module.exports = class GitTimeplotPopup extends View
 
     repo = r for r in atom.project.getRepositories() when @file.replace(/\\/g, '/').indexOf(r?.repo.workingDirectory) != -1
     diffArgs = [
-        "-C",
-        repo.repo.workingDirectory,
-        "diff",
-        "-U9999999",
-        "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}",
-        "#{atom.project.relativize(@file).replace(/\\/g, '/')}"
+      "-C",
+      repo.repo.workingDirectory,
+      "diff",
+      "-U9999999",
+      "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}",
+      "#{atom.project.relativize(@file).replace(/\\/g, '/')}"
     ]
     showArgs = [
-        "-C",
-        path.dirname(@file),
-        "show",
-        "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}"
+      "-C",
+      path.dirname(@file),
+      "show",
+      "#{hash}:#{atom.project.relativize(@file).replace(/\\/g, '/')}"
     ]
     new BufferedProcess {
-        command: "git",
-        args: if options.diff then diffArgs else showArgs,
-        stdout,
-        exit
+      command: "git",
+      args: if options.diff then diffArgs else showArgs,
+      stdout,
+      exit
     }
+
+
+  _getInitialLineNumber: () ->
+    editor = atom.workspace.getActiveTextEditor()
+    editorEle = atom.views.getView editor
+    lineNumber = 0
+    if editor? && editor != '' 
+      lineNumber = editorEle.getLastVisibleScreenRow()
+
+    return lineNumber
