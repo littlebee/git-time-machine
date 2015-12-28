@@ -57,6 +57,10 @@
     border: solid 4px rgba(0, 128, 0, 0.29);
   }
 
+  .controls {
+    float: right;
+  }
+
   li .commit {
     background-color: @inset-panel-background-color;
     margin-bottom: 4px;
@@ -66,6 +70,15 @@
     &:hover {
       background-color: @background-color-selected;
 
+    }
+
+   .header {
+      width: 100%;
+      overflow: hidden;
+      > div {
+        display: inline-block;
+        width: 30%;
+      }
     }
   }
 
