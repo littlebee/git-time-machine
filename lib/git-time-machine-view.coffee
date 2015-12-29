@@ -2,6 +2,7 @@
 path = require('path')
 _ = require('underscore-plus')
 str = require('bumble-strings')
+moment = require('moment')
 
 GitUtils = require './git-utils'
 GitTimeplot = require './git-timeplot'
@@ -69,9 +70,16 @@ class GitTimeMachineView
 
 
   _renderStats: (commits) ->
+    content = ""
+    if commits.length > 0
+      byAuthor = _.indexBy commits, 'authorName'
+      authorCount = _.keys(byAuthor).length
+      durationInMs = moment.unix(commits[commits.length - 1].authorDate).diff(moment.unix(commits[0].authorDate))
+      timeSpan = moment.duration(durationInMs).humanize()
+      content = "<span class='total-commits'>#{commits.length}</span> commits by #{authorCount} authors spanning #{timeSpan}"
     @$element.append """
       <div class='stats'>
-        <span class='total-commits'>#{commits.length}</span> total commits
+        #{content}
       </div>
     """
     return
