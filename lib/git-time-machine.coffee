@@ -7,8 +7,7 @@ module.exports = GitTimeMachine =
   subscriptions: null
 
   activate: (state) ->
-    @gitTimeMachineView = new GitTimeMachineView(state.gitTimeMachineViewState,
-      file: atom.workspace.getActiveTextEditor()?.getPath())
+    @gitTimeMachineView = new GitTimeMachineView state.gitTimeMachineViewState
     @timelinePanel = atom.workspace.addBottomPanel(item: @gitTimeMachineView.getElement(), visible: false)
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
@@ -37,9 +36,10 @@ module.exports = GitTimeMachine =
     else
       @timelinePanel.show()
       @gitTimeMachineView.show()
+      @gitTimeMachineView.setEditor atom.workspace.getActiveTextEditor()
 
 
   _onDidChangeActivePaneItem: (editor) ->
     editor = atom.workspace.getActiveTextEditor()
-    @gitTimeMachineView.setFile(editor?.getPath())
+    @gitTimeMachineView.setEditor(editor)
     return

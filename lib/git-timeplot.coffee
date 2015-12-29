@@ -5,15 +5,17 @@ moment = require 'moment'
 d3 = require 'd3'
 
 GitTimeplotPopup = require './git-timeplot-popup'
+RevisionView = require './git-revision-view'
 
 
 
 module.exports = class GitTimeplot
 
-  constructor: (@element, @file) ->
+  constructor: (@element) ->
     @$element = $(@element)
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
+    @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
 
 
   hide: () ->
@@ -24,9 +26,12 @@ module.exports = class GitTimeplot
     #  nothing to do here
 
 
-  # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
-  render: (@commitData) ->
+  # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory 
+  #               should be in reverse chron order
+  render: (@editor, @commitData) ->
     @popup?.remove()
+    
+    @file = @editor.getPath()
 
     @$timeplot = @$element.find('.timeplot')
     if @$timeplot.length <= 0
@@ -121,7 +126,12 @@ module.exports = class GitTimeplot
     else
       @$hoverMarker.css('left', relativeX - @$hoverMarker.width())
 
-    @_debouncedRenderPopup()
+    if @isMouseDown
+      @_hidePopup(force: true)
+      @_debouncedViewNearestRevision()
+    else
+      @_debouncedRenderPopup()
+
 
   _onMouseleave: (evt) ->
     @isMouseInElement = false
@@ -129,9 +139,12 @@ module.exports = class GitTimeplot
     @_debouncedHidePopup();
     @isMouseDown = false
     
+    
   _onMousedown: (evt) ->
     @isMouseDown = true
-    
+    @_hidePopup(force: true)
+    @_debouncedViewNearestRevision()
+
   
   _onMouseup: (evt) ->
     @isMouseDown = false
@@ -150,7 +163,7 @@ module.exports = class GitTimeplot
 
     @popup?.hide().remove()
     [commits, start, end] = @_filterCommitData(@commitData)
-    @popup = new GitTimeplotPopup(commits, @file, start, end)
+    @popup = new GitTimeplotPopup(commits, @editor, start, end)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
@@ -164,11 +177,15 @@ module.exports = class GitTimeplot
       top: @$element.offset().top - @popup.height() - 10
 
 
-  _hidePopup: () ->
-    return if @popup?.isMouseInPopup() || @isMouseInElement
+  _hidePopup: (options={}) ->
+    options = _.defaults options,
+      force: false
+    
+    return if !options.force && (@popup?.isMouseInPopup() || @isMouseInElement)
     @popup?.hide().remove()
 
 
+  # return commits for range of time at hover marker (mouse hover point +/- fix radius)
   _filterCommitData: () ->
     left = @$hoverMarker.offset().left
     relativeLeft = left - @$element.offset().left - 5
@@ -177,12 +194,20 @@ module.exports = class GitTimeplot
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
+    
+  # return the nearest commit to hover marker or previous
+  _getNearestCommit: () ->
+    [filteredCommitData, tStart, tEnd] = @_filterCommitData()
+    if filteredCommitData?.length > 0
+      return filteredCommitData[0]
+    else
+      return _.find @commitData, (c) -> moment.unix(c.authorDate).isBefore(tEnd)
+
+
+  _viewNearestRevision: () ->
+    nearestCommit =  @_getNearestCommit()
+    if nearestCommit?
+      RevisionView.showRevision(@editor, nearestCommit.hash)
 
 
 
-
-
-
-
-
-  # why does atom keep removing extra lines at end of file?  super annoying

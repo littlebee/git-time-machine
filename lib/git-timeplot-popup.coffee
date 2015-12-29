@@ -6,12 +6,9 @@ RevisionView = require './git-revision-view'
 
 module.exports = class GitTimeplotPopup extends View
 
-  @content = (commitData, file, start, end) ->
+  @content = (commitData, editor, start, end) ->
     dateFormat = "MMM DD YYYY ha"
     @div class: "select-list popover-list git-timemachine-popup", =>
-      @div class: "controls", =>
-        @label "Show Diffs: "
-        @input type: "checkbox", outlet: "showDiffCheck"
       @h5 "There were #{commitData.length} commits between"
       @h6 "#{start.format(dateFormat)} and #{end.format(dateFormat)}"
       @ul =>
@@ -34,7 +31,8 @@ module.exports = class GitTimeplotPopup extends View
               @div "Authored by #{commit.authorName} #{authorDate.fromNow()}"
 
 
-  initialize: (commitData, @file) ->
+  initialize: (commitData, @editor) ->
+    @file = @editor.getPath()
     @appendTo atom.views.getView atom.workspace
     @mouseenter @_onMouseEnter
     @mouseleave @_onMouseLeave
@@ -67,5 +65,5 @@ module.exports = class GitTimeplotPopup extends View
 
   _onShowRevision: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
-    RevisionView.showRevision(@file, revHash, diff: @showDiffCheck.is(':checked'))
+    RevisionView.showRevision(@editor, revHash)
 

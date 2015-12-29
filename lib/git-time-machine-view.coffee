@@ -5,22 +5,25 @@ str = require('bumble-strings')
 
 GitUtils = require './git-utils'
 GitTimeplot = require './git-timeplot'
+GitRevisionView = require './git-revision-view'
 
 module.exports =
 class GitTimeMachineView
   constructor: (serializedState, options={}) ->
-    @render(options.file)
-
-
-  setFile: (file) ->
-    return unless file? 
-    # don't rerender for our commit view
-    unless str.startsWith(path.basename(file), "TimeMachine-")
-      @render(file)
-
-
-  render: (@file) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
+    if options.editor?
+      @setEditor(options.editor)
+      @render()
+
+
+  setEditor: (editor) ->
+    file = editor?.getPath()
+    return unless file? && !str.startsWith(path.basename(file), GitRevisionView.FILE_PREFIX)
+    [@editor, @file] = [editor, file]
+    @render()
+
+
+  render: () ->
     unless @file?
       @_renderPlaceholder()
     else
@@ -57,9 +60,9 @@ class GitTimeMachineView
     return
 
   _renderTimeline: () ->
-    @timeplot ||= new GitTimeplot(@$element, @file)
+    @timeplot ||= new GitTimeplot(@$element)
     GitUtils.getFileCommitHistory @file, (commits) =>
-      @timeplot.render(commits)
+      @timeplot.render(@editor, commits)
       @_renderStats(commits)
       return
     return
