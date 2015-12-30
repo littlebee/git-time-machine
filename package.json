@@ -1,15 +1,15 @@
 {
   "name": "git-time-machine",
   "main": "./lib/git-time-machine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Visually interact with git commit history for a file",
   "keywords": [
-   "git",
-   "git-history",
-   "history",
-   "time",
-   "d3",
-   "atom"
+    "git",
+    "git-history",
+    "history",
+    "time",
+    "d3",
+    "atom"
   ],
   "activationCommands": {
     "atom-workspace": "git-time-machine:toggle"
