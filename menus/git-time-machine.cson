@@ -2,8 +2,8 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Open git-time-machine view'
-      'command': 'git-time-machine:open'
+      'label': 'Toggle git-time-machine view'
+      'command': 'git-time-machine:toggle'
     }
   ]
 'menu': [
@@ -13,8 +13,8 @@
       'label': 'git-time-machine'
       'submenu': [
         {
-          'label': 'Open for current file'
-          'command': 'git-time-machine:open'
+          'label': 'Toggle for current file'
+          'command': 'git-time-machine:toggle'
         }
       ]
     ]

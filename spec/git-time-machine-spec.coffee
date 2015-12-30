@@ -12,7 +12,7 @@ describe "GitTimeMachine", ->
     workspaceElement = atom.views.getView(atom.workspace)
     activationPromise = atom.packages.activatePackage('git-time-machine')
 
-  describe "when the git-time-machine:open event is triggered", ->
+  describe "when the git-time-machine: event is triggered", ->
     it "hides and shows the modal panel", ->
       # Before the activation event the view is not on the DOM, and no panel
       # has been created
@@ -20,7 +20,7 @@ describe "GitTimeMachine", ->
 
       # This is an activation event, triggering it will cause the package to be
       # activated.
-      atom.commands.dispatch workspaceElement, 'git-time-machine:open'
+      atom.commands.dispatch workspaceElement, 'git-time-machine:toggle'
 
       waitsForPromise ->
         activationPromise
@@ -33,7 +33,7 @@ describe "GitTimeMachine", ->
 
         gitTimeMachinePanel = atom.workspace.panelForItem(gitTimeMachineElement)
         expect(gitTimeMachinePanel.isVisible()).toBe true
-        atom.commands.dispatch workspaceElement, 'git-time-machine:open'
+        atom.commands.dispatch workspaceElement, 'git-time-machine:toggle'
         expect(gitTimeMachinePanel.isVisible()).toBe false
 
     it "hides and shows the view", ->
@@ -49,7 +49,7 @@ describe "GitTimeMachine", ->
 
       # This is an activation event, triggering it causes the package to be
       # activated.
-      atom.commands.dispatch workspaceElement, 'git-time-machine:open'
+      atom.commands.dispatch workspaceElement, 'git-time-machine:toggle'
 
       waitsForPromise ->
         activationPromise
@@ -58,5 +58,5 @@ describe "GitTimeMachine", ->
         # Now we can test for view visibility
         gitTimeMachineElement = workspaceElement.querySelector('.git-time-machine')
         expect(gitTimeMachineElement).toBeVisible()
-        atom.commands.dispatch workspaceElement, 'git-time-machine:open'
+        atom.commands.dispatch workspaceElement, 'git-time-machine:toggle'
         expect(gitTimeMachineElement).not.toBeVisible()
