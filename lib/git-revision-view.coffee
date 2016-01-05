@@ -3,24 +3,27 @@ _ = require 'underscore-plus'
 path = require 'path'
 fs = require 'fs'
 
-{BufferedProcess} = require "atom"
+{CompositeDisposable, BufferedProcess} = require "atom"
 {$} = require "atom-space-pen-views"
+
+SplitDiff = require 'split-diff'
+
 
 module.exports =
 class GitRevisionView
-  
+
   @FILE_PREFIX = "TimeMachine - "
   ###
-    This code and technique was originally from git-history package, 
+    This code and technique was originally from git-history package,
     see https://github.com/jakesankey/git-history/blob/master/lib/git-history-view.coffee
-    
+
     Changes to permit click and drag in the time plot to travel in time:
     - don't write revision to disk for faster access and to give the user feedback when git'ing
       a rev to show is slow
     - reuse tabs more - don't open a new tab for every rev of the same file
-    
+
     Changes to permit scrolling to same lines in view in the editor the history is for
-    
+
     thank you, @jakesankey!
 
   ###
@@ -28,8 +31,10 @@ class GitRevisionView
     options = _.defaults options,
       diff: false
 
+    SplitDiff.disable(false)
+
     file = editor.getPath()
-    
+
     fileContents = ""
     stdout = (output) =>
         fileContents += output
@@ -73,11 +78,11 @@ class GitRevisionView
   @_getInitialLineNumber: (editor) ->
     editorEle = atom.views.getView editor
     lineNumber = 0
-    if editor? && editor != '' 
+    if editor? && editor != ''
       lineNumber = editorEle.getLastVisibleScreenRow()
       # console.log "_getInitialLineNumber", lineNumber
-    
-    # TODO: why -5?  this is what it took to actually sync the last line number 
+
+    # TODO: why -5?  this is what it took to actually sync the last line number
     #    between two editors
     return lineNumber - 5
 
@@ -90,14 +95,14 @@ class GitRevisionView
     tempContent = "\n\n\nLoading #{path.basename(file)}@#{revHash}...\n\n\n\n"
     fs.writeFile outputFilePath, tempContent, (error) =>
       if not error
-          promise = atom.workspace.open outputFilePath, 
+          promise = atom.workspace.open outputFilePath,
             split: "right"
             activatePane: false
             activateItem: true
             searchAllPanes: true
           promise.then (newTextEditor) =>
             @_updateNewTextEditor(newTextEditor, editor, revHash, fileContents)
-      
+
 
   @_updateNewTextEditor: (newTextEditor, editor, revHash, fileContents) ->
     # slight delay so the user gets feedback on their action
@@ -106,13 +111,15 @@ class GitRevisionView
       # HACK ALERT: this is prone to eventually fail. Don't show user change
       #  message between changes to rev being viewed
       newTextEditor.buffer.cachedDiskContents = fileContents
+      @_splitDiff(editor, newTextEditor)
+      # split diff will keep the scroll sync'd, but doesn't seem to initially sync themes
       @_syncScroll(editor, newTextEditor)
-      @_affixTabTitle(newTextEditor, revHash)
+      @_affixTabTitle newTextEditor, revHash
     , 300
 
-    
+
   @_affixTabTitle: (newTextEditor, revHash) ->
-    # speaking of hacks this is also hackish, there has to be a better way to change to 
+    # speaking of hacks this is also hackish, there has to be a better way to change to
     # tab title and unlinking it from the file name
     $el = $(atom.views.getView(newTextEditor))
     $tabTitle = $el.parents('atom-pane').find('li.tab.active .title')
@@ -121,9 +128,33 @@ class GitRevisionView
       titleText = titleText.replace(/\@.*/, "@#{revHash}")
     else
       titleText += " @#{revHash}"
-      
+
     $tabTitle.text(titleText)
-    
+
+
+  @_splitDiff: (editor, newTextEditor) ->
+    editors =
+      editor1: newTextEditor    # the older revision
+      editor2: editor           # current rev
+
+    SplitDiff.editorSubscriptions = new CompositeDisposable()
+    SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
+      SplitDiff.updateDiff(editors)
+    SplitDiff.editorSubscriptions.add editors.editor2.onDidStopChanging =>
+      SplitDiff.updateDiff(editors)
+    SplitDiff.editorSubscriptions.add editors.editor1.onDidDestroy =>
+      SplitDiff.disable(false)
+    SplitDiff.editorSubscriptions.add editors.editor2.onDidDestroy =>
+      SplitDiff.disable(false)
+
+    SplitDiff.editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
+      SplitDiff.updateDiff(editors)
+
+    SplitDiff.updateDiff editors
+
+
+
+
   # sync scroll to editor that we are show revision for
   @_syncScroll: (editor, newTextEditor) ->
     # without the delay, the scroll position will fluctuate slightly beween
@@ -133,5 +164,3 @@ class GitRevisionView
         row: @_getInitialLineNumber(editor), column: 0
       })
     , 50
-  
-
