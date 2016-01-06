@@ -47,19 +47,7 @@ class GitRevisionView
     @_loadRevision file, revHash, stdout, exit
 
 
-  @_loadRevision: (file, hash, stdout, exit, options={}) ->
-    options = _.defaults options,
-      diff: false;
-
-    repo = r for r in atom.project.getRepositories() when file.replace(/\\/g, '/').indexOf(r?.repo.workingDirectory) != -1
-    diffArgs = [
-      "-C",
-      repo.repo.workingDirectory,
-      "diff",
-      "-U9999999",
-      "#{hash}:#{atom.project.relativize(file).replace(/\\/g, '/')}",
-      "#{atom.project.relativize(file).replace(/\\/g, '/')}"
-    ]
+  @_loadRevision: (file, hash, stdout, exit) ->
     showArgs = [
       "-C",
       path.dirname(file),
@@ -69,7 +57,7 @@ class GitRevisionView
     # console.log "calling git"
     new BufferedProcess {
       command: "git",
-      args: if options.diff then diffArgs else showArgs,
+      args: showArgs,
       stdout,
       exit
     }
