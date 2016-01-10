@@ -1,11 +1,13 @@
 
-<a name="1.2.2"></a>
+<a name="1.2.3"></a>
 ## [1.2.3](https://github.com/littlebee/git-time-machine/compare/v1.2.2...v1.2.3) (2016-01-10)
 
 ### :bug:
+* @kankaristo suggested fix for [issue #3](https://github.com/littlebee/git-time-machine/issues/3)
+ ([c775744](https://github.com/littlebee/git-time-machine/commit/c775744)),  
+* maybe fix [issue #5](https://github.com/littlebee/git-time-machine/issues/5)? (unreproducible) ([d3bb2b0](https://github.com/littlebee/git-time-machine/commit/d3bb2b0)),  
+* closes [issue #4](https://github.com/littlebee/git-time-machine/issues/4). Changelog out of date. 
 
-* @kankaristo suggested fix for #3 ([c775744](https://github.com/littlebee/git-time-machine/commit/c775744)),  [#3](https://github.com/littlebee/git-time-machine/issues/3)
-* maybe fix #5? (unreproducible) ([d3bb2b0](https://github.com/littlebee/git-time-machine/commit/d3bb2b0)),  [#5](https://github.com/littlebee/git-time-machine/issues/5)
 
 ## [1.2.2](https://github.com/littlebee/git-time-machine/compare/v1.2.1...v1.2.2) (2016-01-05)
 Reduce animated demo gif size so it will work on Atom.io.  
