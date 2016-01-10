@@ -52,7 +52,7 @@ class GitRevisionView
       "-C",
       path.dirname(file),
       "show",
-      "#{hash}:#{atom.project.relativize(file).replace(/\\/g, '/')}"
+      "#{hash}:./#{path.basename(file)}"
     ]
     # console.log "calling git"
     new BufferedProcess {
