@@ -1,7 +1,7 @@
 {
   "name": "git-time-machine",
   "main": "./lib/git-time-machine",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Visually interact with git commit history for a file",
   "keywords": [
     "git",
