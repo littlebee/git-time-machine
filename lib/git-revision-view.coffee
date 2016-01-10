@@ -127,12 +127,14 @@ class GitRevisionView
 
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
-      SplitDiff.updateDiff(editors)
+      SplitDiff.updateDiff(editors) if editors?
     SplitDiff.editorSubscriptions.add editors.editor2.onDidStopChanging =>
-      SplitDiff.updateDiff(editors)
+      SplitDiff.updateDiff(editors) if editors?
     SplitDiff.editorSubscriptions.add editors.editor1.onDidDestroy =>
+      editors = null;
       SplitDiff.disable(false)
     SplitDiff.editorSubscriptions.add editors.editor2.onDidDestroy =>
+      editors = null;
       SplitDiff.disable(false)
 
     SplitDiff.editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
