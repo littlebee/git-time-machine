@@ -18,7 +18,7 @@ describe "GitTimeMachineView", ->
         activationPromise
       runs ->
         timeMachineElement = workspaceElement.querySelector('.git-time-machine')
-        console.log timeMachineElement.outerHTML
+        # console.log timeMachineElement.outerHTML
 
     #it "should show placeholder when no file in editor", ->
     #  expect(timeMachineElement.querySelector('.placeholder')).toExist()
