@@ -26,5 +26,8 @@
     "moment": "^2.10.6",
     "underscore-plus": "1.x",
     "split-diff": "git+https://github.com/mupchrch/split-diff.git#v0.5.2"
+  },
+  "devDependencies": {
+    "git-log-utils": "^0.1.1"
   }
 }

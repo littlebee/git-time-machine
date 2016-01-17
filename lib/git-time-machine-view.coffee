@@ -4,7 +4,7 @@ _ = require('underscore-plus')
 str = require('bumble-strings')
 moment = require('moment')
 
-GitUtils = require './git-utils'
+GitLog = require 'git-log-utils'
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
 
@@ -62,10 +62,9 @@ class GitTimeMachineView
 
   _renderTimeline: () ->
     @timeplot ||= new GitTimeplot(@$element)
-    GitUtils.getFileCommitHistory @file, (commits) =>
-      @timeplot.render(@editor, commits)
-      @_renderStats(commits)
-      return
+    commits = GitLog.getCommitHistory @file
+    @timeplot.render(@editor, commits)
+    @_renderStats(commits)
     return
 
 

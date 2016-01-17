@@ -59,7 +59,7 @@ class GitRevisionView
       command: "git",
       args: showArgs,
       stdout,
-      exit
+      exit 
     }
 
 

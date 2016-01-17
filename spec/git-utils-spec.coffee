@@ -1,11 +1,11 @@
 
-GitUtils = require '../lib/git-utils'
+GitLog = require 'git-log-utils'
 fs = require 'fs'
 path = require 'path'
 
 expectedCommits = require './test-data/fiveCommitsExpected'
 
-describe "GitUtils", ->
+describe "GitLogUtils", ->
   describe "when loading file history for known file in git", ->
     beforeEach ->
       @addMatchers toHaveKnownValues: (expected) ->
@@ -28,14 +28,7 @@ describe "GitUtils", ->
 
       projectRoot = __dirname
       testFileName = path.join projectRoot, 'test-data', 'fiveCommits.txt'
-      @testdata = null
-
-      GitUtils.getFileCommitHistory testFileName, (commits) =>
-        @testdata = commits
-        return
-
-      waitsFor =>
-        return @testdata?
+      @testdata = GitLog.getCommitHistory testFileName
 
 
     it "should have 5 commits", ->
