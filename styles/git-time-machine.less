@@ -43,19 +43,22 @@
     width: 5px;
     top: 0px;
     right: 10px;
-    background-color: rgba(0, 128, 0, 0.29);
+    background-color: @pane-item-border-color;
   }
 
 }
 
 .git-timemachine-popup {
+  background: @base-background-color;
+  color: @text-color;
+
   &.popover-list {
     position: absolute;
     z-index: 10;
     width: 400px;
     max-height: 300px;
     overflow-y: auto;
-    border: solid 4px rgba(0, 128, 0, 0.29);
+    border: solid 4px @pane-item-border-color;
   }
 
   .controls {
