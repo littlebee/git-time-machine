@@ -1,5 +1,8 @@
 
 <a name="1.2.3"></a>
+## [1.2.5](https://github.com/littlebee/git-time-machine/compare/1.2.4...1.2.5) (2016-02-52)
+The last apm publish failed attempting to right
+
 ## [1.2.4](https://github.com/littlebee/git-time-machine/compare/1.2.3...1.2.4) (2016-02-52)
 No fundamental changes except to mention [git-log-utils](https://www.npmjs.com/package/git-log-utils) being moved to it's own package.  
 
