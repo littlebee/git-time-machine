@@ -1,5 +1,13 @@
 
 <a name="1.2.3"></a>
+## [1.2.4](https://github.com/littlebee/git-time-machine/compare/1.2.3...1.2.4) (2016-02-52)
+No fundamental changes except to mention [git-log-utils](https://www.npmjs.com/package/git-log-utils) being moved to it's own package.  
+
+### Other Commits
+* [48efec8](https://github.com/littlebee/git-time-machine/commit/48efec898a9bbbc079ed9f65c26062289437b70d) update git-log-utils to 0.1.3
+* [b41a304](https://github.com/littlebee/git-time-machine/commit/b41a3049745e7a6d7c5dd830900f7a44774d4c36) cleanup console.log
+* [98b864e](https://github.com/littlebee/git-time-machine/commit/98b864ebf66d473e0c559fbc6004982c7fc378cb) factor out git log utils to separate npm package. all tests passing
+
 ## [1.2.3](https://github.com/littlebee/git-time-machine/compare/v1.2.2...v1.2.3) (2016-01-10)
 
 ### :bug:
