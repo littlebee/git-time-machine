@@ -4,9 +4,9 @@
 No fundamental changes except to mention [git-log-utils](https://www.npmjs.com/package/git-log-utils) being moved to it's own package.  
 
 ### Other Commits
-* [48efec8](https://github.com/littlebee/git-time-machine/commit/48efec898a9bbbc079ed9f65c26062289437b70d) update git-log-utils to 0.1.3
-* [b41a304](https://github.com/littlebee/git-time-machine/commit/b41a3049745e7a6d7c5dd830900f7a44774d4c36) cleanup console.log
-* [98b864e](https://github.com/littlebee/git-time-machine/commit/98b864ebf66d473e0c559fbc6004982c7fc378cb) factor out git log utils to separate npm package. all tests passing
+* [0e4737e](https://github.com/littlebee/git-time-machine/commit/0e4737e35eda9225d461f847e33dc5e12e8135d6) Merge branch 'master' of https://github.com/littlebee/git-time-machine
+* [ee5033d](https://github.com/littlebee/git-time-machine/commit/ee5033dd5b5512e9af85810c198c2f5e122b9f28) Merge pull request #10 from raqystyle/fix/pop-over-background
+* [d4c8230](https://github.com/littlebee/git-time-machine/commit/d4c8230be73087df7c1aa6f982af5d6afb02e344) Set the background of the popup. Used standard border colours (followed style guides)
 
 ## [1.2.3](https://github.com/littlebee/git-time-machine/compare/v1.2.2...v1.2.3) (2016-01-10)
 
