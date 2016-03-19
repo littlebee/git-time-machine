@@ -1,12 +1,9 @@
 
 <a name="1.2.3"></a>
 ## [1.2.6](https://github.com/littlebee/git-time-machine/compare/1.2.5...1.2.6) (2016-03-78)
-
+bug fixes
 
 ### Other Commits
-* [29d69b5](https://github.com/littlebee/git-time-machine/commit/29d69b5318a6d97cc5672bfd11996080ad18f4d7) updated changelog via atom:publish
-* [3389dc9](https://github.com/littlebee/git-time-machine/commit/3389dc94342c6d60ab4a5302c5f057d8009b3741) updated changelog via atom:publish
-* [353d2af](https://github.com/littlebee/git-time-machine/commit/353d2af5c3efaa17d7fd98aa75d04c5c493195d5) updated changelog via atom:publish
 * [55646c0](https://github.com/littlebee/git-time-machine/commit/55646c0dc07e882591b48cb56fdf114307217d5f) fix #22 - path errors on windows
 
 ## [1.2.5](https://github.com/littlebee/git-time-machine/compare/1.2.4...1.2.5) (2016-02-52)
