@@ -1,7 +1,7 @@
 
 <a name="1.2.3"></a>
 ## [1.2.6](https://github.com/littlebee/git-time-machine/compare/1.2.5...1.2.6) (2016-03-78)
-testing
+
 
 ### Other Commits
 * [55646c0](https://github.com/littlebee/git-time-machine/commit/55646c0dc07e882591b48cb56fdf114307217d5f) fix #22 - path errors on windows
