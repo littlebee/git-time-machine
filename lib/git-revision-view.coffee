@@ -49,8 +49,6 @@ class GitRevisionView
 
   @_loadRevision: (file, hash, stdout, exit) ->
     showArgs = [
-      "-C",
-      path.dirname(file),
       "show",
       "#{hash}:./#{path.basename(file)}"
     ]
@@ -58,8 +56,9 @@ class GitRevisionView
     new BufferedProcess {
       command: "git",
       args: showArgs,
+      options: { cwd:path.dirname(file) },
       stdout,
-      exit 
+      exit
     }
 
 
