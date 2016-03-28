@@ -1,5 +1,15 @@
 
 <a name="1.2.3"></a>
+## [1.3.0](https://github.com/littlebee/git-time-machine/compare/1.2.6...1.3.0) (2016-03-87)
+Now works on windows!  (I think).   Big thanks @feleij
+
+### Bugs Fixed in this Release
+* [45e1ad4](https://github.com/littlebee/git-time-machine/commit/45e1ad49c57451ecd5b0da70cb0fd3a2a14159be)  fix #6. should work on windows
+* [61da16a](https://github.com/littlebee/git-time-machine/commit/61da16a41fb31e51bfaf503ecdd8d897fd76f1e0)  fix #6.  Make time machine ignore line endings / prefer line ending of code in editor being diff'd
+
+### Other Commits
+* [c0dc9d5](https://github.com/littlebee/git-time-machine/commit/c0dc9d58ccdbe9c3e4c6b801226dc0c68cb1a754) bump git-log-utils version
+
 ## [1.2.6](https://github.com/littlebee/git-time-machine/compare/1.2.5...1.2.6) (2016-03-78)
 bug fixes
 
