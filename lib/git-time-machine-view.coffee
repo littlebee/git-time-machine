@@ -25,17 +25,14 @@ class GitTimeMachineView
 
 
   render: () ->
-    unless @file?
+    commits = @gitCommitHistory()
+    unless @file? && commits?
       @_renderPlaceholder()
     else
-      commits = @getCommitHistory(@file)
-      unless commits?
-        _renderPlaceholder()
-      else
-        @$element.text("")
-        @_renderCloseHandle()
-        @_renderStats(commits)
-        @_renderTimeline(commits)
+      @$element.text("")
+      @_renderCloseHandle()
+      @_renderStats(commits)
+      @_renderTimeline(commits)
 
     return @$element
 
@@ -62,9 +59,10 @@ class GitTimeMachineView
     return @$element.get(0)
   
   
-  gitCommitHistory: ->
+  gitCommitHistory: (file=@file)->
+    return null unless file?
     try
-      commits = GitLog.getCommitHistory @file
+      commits = GitLog.getCommitHistory file
     catch e
       if e.message?.match 'Not a git repository'
         atom.notifications.addError "Error: Not in a git repository"
