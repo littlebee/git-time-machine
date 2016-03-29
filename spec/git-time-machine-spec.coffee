@@ -12,7 +12,7 @@ describe "GitTimeMachine", ->
     workspaceElement = atom.views.getView(atom.workspace)
     activationPromise = atom.packages.activatePackage('git-time-machine')
 
-  describe "when the git-time-machine: event is triggered", ->
+  describe "when the git-time-machine:toggle event is triggered", ->
     it "hides and shows the modal panel", ->
       # Before the activation event the view is not on the DOM, and no panel
       # has been created
