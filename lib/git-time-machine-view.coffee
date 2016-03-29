@@ -28,11 +28,14 @@ class GitTimeMachineView
     unless @file?
       @_renderPlaceholder()
     else
-      commits = GitLog.getCommitHistory @file
-      @$element.text("")
-      @_renderCloseHandle()
-      @_renderStats(commits)
-      @_renderTimeline(commits)
+      commits = @getCommitHistory(@file)
+      unless commits?
+        _renderPlaceholder()
+      else
+        @$element.text("")
+        @_renderCloseHandle()
+        @_renderStats(commits)
+        @_renderTimeline(commits)
 
     return @$element
 
@@ -57,8 +60,20 @@ class GitTimeMachineView
 
   getElement: ->
     return @$element.get(0)
+  
+  
+  gitCommitHistory: ->
+    try
+      commits = GitLog.getCommitHistory @file
+    catch e
+      if e.message?.match 'Not a git repository'
+        atom.notifications.addError "Error: Not in a git repository"
+        return null
+      atom.notifications.addError String e
+      return null
 
-
+    return commits;
+      
   _renderPlaceholder: () ->
     @$element.html("<div class='placeholder'>Select a file in the git repo to see timeline</div>")
     return
@@ -80,7 +95,7 @@ class GitTimeMachineView
     @timeplot ||= new GitTimeplot(@$element)
     @timeplot.render(@editor, commits)
     return 
-    
+
 
   _renderStats: (commits) ->
     content = ""
