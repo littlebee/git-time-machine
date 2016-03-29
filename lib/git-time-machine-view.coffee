@@ -62,7 +62,15 @@ class GitTimeMachineView
 
   _renderTimeline: () ->
     @timeplot ||= new GitTimeplot(@$element)
-    commits = GitLog.getCommitHistory @file
+    try
+      commits = GitLog.getCommitHistory @file
+    catch e
+      if e.message?.match 'Not a git repository'
+        atom.notifications.addError "Error: Not in a git repository"
+        return
+      atom.notifications.addError String e
+      return
+
     @timeplot.render(@editor, commits)
     @_renderStats(commits)
     return
