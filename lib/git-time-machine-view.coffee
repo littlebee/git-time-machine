@@ -64,9 +64,10 @@ class GitTimeMachineView
     try
       commits = GitLog.getCommitHistory file
     catch e
-      if e.message?.match 'Not a git repository'
-        atom.notifications.addError "Error: Not in a git repository"
-        return null
+      if e.message?
+        if e.message.match('File not a git repository') || str.weaklyHas(e.message, "is outside repository")
+          atom.notifications.addError "Error: Not in a git repository"
+          return null
       atom.notifications.addError String e
       return null
 
