@@ -1,5 +1,19 @@
 
 <a name="1.2.3"></a>
+## [1.4.0](https://github.com/littlebee/git-time-machine/compare/1.3.0...1.4.0) (2016-03-89)
+A few more bug fixes and tweaks from the community for this release (see below).  Plus a close button for closing the timeplot that I was going to save for 2.0, but.... there you go. 
+
+### Other Commits
+* [2bbdd89](https://github.com/littlebee/git-time-machine/commit/2bbdd89960777ebdfb57478428165585d016b6df) Merge branch 'development' of https://github.com/littlebee/git-time-machine into development
+* [060292a](https://github.com/littlebee/git-time-machine/commit/060292ab48bd52254b2d13cc7e0bfb261dc742e8) Merge pull request #27 from igorrafael/development
+* [b9e37a6](https://github.com/littlebee/git-time-machine/commit/b9e37a6bda57b71e68d7986f61f4e4a105ee7ae8) Fixed error on older git versions. Removed usage of git argument '-C' which is not available on all git versions (eg: 1.8.3.1). The path is instead passed via Atom's BufferedProcess constructor options.
+* [31cbbbb](https://github.com/littlebee/git-time-machine/commit/31cbbbb0e8b206f8800a49fa98700025ff962f34) move git log fetch and try catch out to it's own method
+* [e7b2741](https://github.com/littlebee/git-time-machine/commit/e7b274162bd777ae7d1bde25e0ce848f43ddf1f9) merge from master
+* [6e7376b](https://github.com/littlebee/git-time-machine/commit/6e7376b6f0c1ac53ad2efe7b7c15c5d9d08b1e12) Merge pull request #35 from melvinsh/patch-1
+* [d412781](https://github.com/littlebee/git-time-machine/commit/d4127819257dd4c83a1acbb60ad3aef334d8164d) Fix spec description
+* [9c30cf2](https://github.com/littlebee/git-time-machine/commit/9c30cf28dd7cbea51848547bfce6925475ceaa3f) Merge pull request #37 from stevelacy/master
+* [dbec7e3](https://github.com/littlebee/git-time-machine/commit/dbec7e329762e6f5bc0b1ccc37b8e97bff796ad2) Catch errors - Use Atom core error notifications - close #36 close #34 close #33 close #32 close #31 close #29
+
 ## [1.3.0](https://github.com/littlebee/git-time-machine/compare/1.2.6...1.3.0) (2016-03-87)
 Now works on windows!  (I think).   Big thanks @feleij
 
