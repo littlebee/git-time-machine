@@ -1,5 +1,12 @@
 
 <a name="1.2.3"></a>
+## [1.4.1](https://github.com/littlebee/git-time-machine/compare/1.4.0...1.4.1) (2016-03-89)
+A few more bug fixes; see below.  
+
+### Other Commits
+* [992d13a](https://github.com/littlebee/git-time-machine/commit/992d13a942be9ddccace3aafbbd0ffc818630843) fixes #25 - better handling of files outside the repository
+* [6e9bd2f](https://github.com/littlebee/git-time-machine/commit/6e9bd2f1b3a4a358a58ae24fc7f45d65b8554b1c) fixes #30 - should be able to handle directories and files with spaces in name
+
 ## [1.4.0](https://github.com/littlebee/git-time-machine/compare/1.3.0...1.4.0) (2016-03-89)
 A few more bug fixes and tweaks from the community for this release (see below).  Plus a close button for closing the timeplot that I was going to save for 2.0, but.... there you go. 
 
