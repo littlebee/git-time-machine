@@ -18,6 +18,7 @@ class GitTimeMachineView
 
 
   setEditor: (editor) ->
+    return unless editor != @editor
     file = editor?.getPath()
     return unless file? && !str.startsWith(path.basename(file), GitRevisionView.FILE_PREFIX)
     [@editor, @file] = [editor, file]
@@ -57,8 +58,8 @@ class GitTimeMachineView
 
   getElement: ->
     return @$element.get(0)
-  
-  
+
+
   gitCommitHistory: (file=@file)->
     return null unless file?
     try
@@ -72,12 +73,12 @@ class GitTimeMachineView
       return null
 
     return commits;
-      
+
   _renderPlaceholder: () ->
     @$element.html("<div class='placeholder'>Select a file in the git repo to see timeline</div>")
     return
-    
-    
+
+
   _renderCloseHandle: () ->
     $closeHandle = $("<div class='close-handle'>X</div>")
     @$element.append $closeHandle
@@ -87,13 +88,13 @@ class GitTimeMachineView
       e.stopPropagation()
       # why not? instead of adding callback, our own event...
       atom.commands.dispatch(atom.views.getView(atom.workspace), "git-time-machine:toggle")
-      
-    
+
+
 
   _renderTimeline: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
     @timeplot.render(@editor, commits)
-    return 
+    return
 
 
   _renderStats: (commits) ->
