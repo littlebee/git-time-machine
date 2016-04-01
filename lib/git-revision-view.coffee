@@ -1,4 +1,3 @@
-
 _ = require 'underscore-plus'
 path = require 'path'
 fs = require 'fs'
@@ -62,18 +61,6 @@ class GitRevisionView
     }
 
 
-  @_getInitialLineNumber: (editor) ->
-    editorEle = atom.views.getView editor
-    lineNumber = 0
-    if editor? && editor != ''
-      lineNumber = editorEle.getLastVisibleScreenRow()
-      # console.log "_getInitialLineNumber", lineNumber
-
-    # TODO: why -5?  this is what it took to actually sync the last line number
-    #    between two editors
-    return lineNumber - 5
-
-
   @_showRevision: (file, editor, revHash, fileContents, options={}) ->
     outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
     fs.mkdir outputDir if not fs.existsSync outputDir
@@ -98,14 +85,12 @@ class GitRevisionView
       fileContents = fileContents.replace(/(\r\n|\n)/g, lineEnding)
       newTextEditor.buffer.setPreferredLineEnding(lineEnding)
       newTextEditor.setText(fileContents)
-      
+
       # HACK ALERT: this is prone to eventually fail. Don't show user change
       #  "would you like to save" message between changes to rev being viewed
       newTextEditor.buffer.cachedDiskContents = fileContents
-      
+
       @_splitDiff(editor, newTextEditor)
-      # split diff will keep the scroll sync'd, but doesn't seem to initially sync themes
-      @_syncScroll(editor, newTextEditor)
       @_affixTabTitle newTextEditor, revHash
     , 300
 
@@ -129,6 +114,10 @@ class GitRevisionView
       editor1: newTextEditor    # the older revision
       editor2: editor           # current rev
 
+    SplitDiff.setConfig 'leftEditorColor', 'green'
+    SplitDiff.setConfig 'leftEditorColor', 'red'
+    SplitDiff.setConfig 'diffWords', true
+    SplitDiff.setConfig 'ignoreWhitespace', false
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
       SplitDiff.updateDiff(editors) if editors?
@@ -141,20 +130,4 @@ class GitRevisionView
       editors = null;
       SplitDiff.disable(false)
 
-    SplitDiff.editorSubscriptions.add atom.config.onDidChange 'split-diff.ignoreWhitespace', ({newValue, oldValue}) =>
-      SplitDiff.updateDiff(editors)
-
     SplitDiff.updateDiff editors
-
-
-
-
-  # sync scroll to editor that we are show revision for
-  @_syncScroll: (editor, newTextEditor) ->
-    # without the delay, the scroll position will fluctuate slightly beween
-    # calls to editor setText
-    _.delay =>
-      newTextEditor.scrollToBufferPosition({
-        row: @_getInitialLineNumber(editor), column: 0
-      })
-    , 50
