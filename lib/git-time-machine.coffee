@@ -41,5 +41,6 @@ module.exports = GitTimeMachine =
 
   _onDidChangeActivePaneItem: (editor) ->
     editor = atom.workspace.getActiveTextEditor()
-    @gitTimeMachineView.setEditor(editor)
+    if @timelinePanel.isVisible()
+      @gitTimeMachineView.setEditor(editor)
     return
