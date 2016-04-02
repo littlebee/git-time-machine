@@ -26,11 +26,11 @@ module.exports = class GitTimeplot
     #  nothing to do here
 
 
-  # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory 
+  # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
   render: (@editor, @commitData) ->
     @popup?.remove()
-    
+
     @file = @editor.getPath()
 
     @$timeplot = @$element.find('.timeplot')
@@ -97,7 +97,7 @@ module.exports = class GitTimeplot
     .attr("cy", (d)=> @y(moment.unix(d.authorDate).hour()))
     .transition()
     .duration(500)
-    .attr("r", (d) -> r(d.linesAdded + d.linesDeleted))
+    .attr("r", (d) -> r(d.linesAdded + d.linesDeleted || 0))
 
 
   # hover marker is the green vertical line that follows the mouse on the timeplot
@@ -138,14 +138,14 @@ module.exports = class GitTimeplot
     # debouncing gives a little time to get the mouse into the popup
     @_debouncedHidePopup();
     @isMouseDown = false
-    
-    
+
+
   _onMousedown: (evt) ->
     @isMouseDown = true
     @_hidePopup(force: true)
     @_debouncedViewNearestRevision()
 
-  
+
   _onMouseup: (evt) ->
     @isMouseDown = false
 
@@ -180,7 +180,7 @@ module.exports = class GitTimeplot
   _hidePopup: (options={}) ->
     options = _.defaults options,
       force: false
-    
+
     return if !options.force && (@popup?.isMouseInPopup() || @isMouseInElement)
     @popup?.hide().remove()
 
@@ -194,7 +194,7 @@ module.exports = class GitTimeplot
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
-    
+
   # return the nearest commit to hover marker or previous
   _getNearestCommit: () ->
     [filteredCommitData, tStart, tEnd] = @_filterCommitData()
@@ -208,6 +208,3 @@ module.exports = class GitTimeplot
     nearestCommit =  @_getNearestCommit()
     if nearestCommit?
       RevisionView.showRevision(@editor, nearestCommit.hash)
-
-
-
