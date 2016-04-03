@@ -8,6 +8,8 @@ GitLog = require 'git-log-utils'
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
 
+NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a git repository"]
+
 module.exports =
 class GitTimeMachineView
   constructor: (serializedState, options={}) ->
@@ -66,10 +68,12 @@ class GitTimeMachineView
       commits = GitLog.getCommitHistory file
     catch e
       if e.message?
-        if e.message.match('File not a git repository') || str.weaklyHas(e.message, "is outside repository")
-          atom.notifications.addError "Error: Not in a git repository"
+        if str.weaklyHas(e.message, NOT_GIT_ERRORS)
+          console.warn "#{file} not in a git repository"
           return null
+      
       atom.notifications.addError String e
+      console.error e
       return null
 
     return commits;
