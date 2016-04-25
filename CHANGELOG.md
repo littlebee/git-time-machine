@@ -1,5 +1,8 @@
 
 <a name="1.2.3"></a>
+## [1.5.1](https://github.com/littlebee/git-time-machine/compare/1.5.0...1.5.1) (2016-04-116)
+Improvements and upgrades to split-diff, differencing view.  Thank you @DSpeckhals.
+
 ## [1.5.0](https://github.com/littlebee/git-time-machine/compare/1.4.1...1.5.0) (2016-04-116)
 Improvements and upgrades to split-diff, differencing view.  Thank you @DSpeckhals.
 
