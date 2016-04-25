@@ -69,13 +69,23 @@ class GitRevisionView
     tempContent = "Loading..." + editor.buffer?.lineEndingForRow(0)
     fs.writeFile outputFilePath, tempContent, (error) =>
       if not error
+        # editor (current rev) may have been destroyed, workspace.open will find or
+        # reopen it
+        promise = atom.workspace.open file,
+          split: "left"
+          activatePane: false
+          activateItem: true
+          searchAllPanes: false
+        promise.then (editor) =>
           promise = atom.workspace.open outputFilePath,
             split: "right"
             activatePane: false
             activateItem: true
-            searchAllPanes: true
+            searchAllPanes: false
           promise.then (newTextEditor) =>
             @_updateNewTextEditor(newTextEditor, editor, revHash, fileContents)
+
+
 
 
   @_updateNewTextEditor: (newTextEditor, editor, revHash, fileContents) ->
