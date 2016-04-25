@@ -61,6 +61,18 @@ class GitRevisionView
     }
 
 
+  @_getInitialLineNumber: (editor) ->
+    editorEle = atom.views.getView editor
+    lineNumber = 0
+    if editor? && editor != ''
+      lineNumber = editorEle.getLastVisibleScreenRow()
+      # console.log "_getInitialLineNumber", lineNumber
+
+      # TODO: why -5?  this is what it took to actually sync the last line number
+      #    between two editors
+      return lineNumber - 5
+
+
   @_showRevision: (file, editor, revHash, fileContents, options={}) ->
     outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
     fs.mkdir outputDir if not fs.existsSync outputDir
@@ -101,6 +113,7 @@ class GitRevisionView
       newTextEditor.buffer.cachedDiskContents = fileContents
 
       @_splitDiff(editor, newTextEditor)
+      @_syncScroll(editor, newTextEditor)
       @_affixTabTitle newTextEditor, revHash
     , 300
 
@@ -124,10 +137,10 @@ class GitRevisionView
       editor1: newTextEditor    # the older revision
       editor2: editor           # current rev
 
-    SplitDiff.setConfig 'leftEditorColor', 'green'
+    SplitDiff.setConfig 'rightEditorColor', 'green'
     SplitDiff.setConfig 'leftEditorColor', 'red'
     SplitDiff.setConfig 'diffWords', true
-    SplitDiff.setConfig 'ignoreWhitespace', false
+    SplitDiff.setConfig 'ignoreWhitespace', true
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
       SplitDiff.updateDiff(editors) if editors?
@@ -141,3 +154,13 @@ class GitRevisionView
       SplitDiff.disable(false)
 
     SplitDiff.updateDiff editors
+
+
+  # sync scroll to editor that we are show revision for
+  @_syncScroll: (editor, newTextEditor) ->
+    # without the delay, the scroll position will fluctuate slightly beween
+    # calls to editor setText
+    _.delay =>
+      return if newTextEditor.isDestroyed()
+      newTextEditor.scrollToBufferPosition({row: @_getInitialLineNumber(editor), column: 0})
+    , 50
