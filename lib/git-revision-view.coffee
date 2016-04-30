@@ -137,10 +137,10 @@ class GitRevisionView
       editor1: newTextEditor    # the older revision
       editor2: editor           # current rev
 
-    SplitDiff.setConfig 'rightEditorColor', 'green'
-    SplitDiff.setConfig 'leftEditorColor', 'red'
-    SplitDiff.setConfig 'diffWords', true
-    SplitDiff.setConfig 'ignoreWhitespace', true
+    SplitDiff._setConfig 'rightEditorColor', 'green'
+    SplitDiff._setConfig 'leftEditorColor', 'red'
+    SplitDiff._setConfig 'diffWords', true
+    SplitDiff._setConfig 'ignoreWhitespace', true
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
       SplitDiff.updateDiff(editors) if editors?
