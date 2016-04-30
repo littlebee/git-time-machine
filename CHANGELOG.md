@@ -1,5 +1,14 @@
 
 <a name="1.2.3"></a>
+## [1.5.2](https://github.com/littlebee/git-time-machine/compare/1.5.1...1.5.2) (2016-04-121)
+
+
+### Other Commits
+* [756d05a](https://github.com/littlebee/git-time-machine/commit/756d05a14dc9fb7c74a94c6e95cd189fdcd5e3c1) add horz scroll syncing (#57). config options coming in 2.0
+* [7c35f9b](https://github.com/littlebee/git-time-machine/commit/7c35f9b850e2db989120c6c0a0c3a16a1784f0d1) add trouble shooting section to README
+* [07aa7d1](https://github.com/littlebee/git-time-machine/commit/07aa7d1a71e2acb563e9cfeae21bd280f1f5db50) Adds keyboard shortcut to README.md
+* [0259ad6](https://github.com/littlebee/git-time-machine/commit/0259ad65d873daadf036370d1ba9275521ec202b) update split-diff to 0.7.5. fixes #38
+
 ## [1.5.1](https://github.com/littlebee/git-time-machine/compare/1.5.0...1.5.1) (2016-04-116)
 Improvements and upgrades to split-diff, differencing view.  Thank you @DSpeckhals.
 
