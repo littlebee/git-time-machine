@@ -20,10 +20,11 @@
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
+    "atom-libgit2-log-utils": "^0.3.0",
     "atom-space-pen-views": "^2.0.3",
     "bumble-strings": "^0.4.1",
     "d3": "^3.5.6",
-    "git-log-utils": "0.2.2",
+    "es6-promise": "^3.1.2",
     "moment": "^2.10.6",
     "split-diff": "git+https://github.com/mupchrch/split-diff.git#v0.7.5",
     "underscore-plus": "1.x"

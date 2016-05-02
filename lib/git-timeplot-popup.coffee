@@ -13,14 +13,14 @@ module.exports = class GitTimeplotPopup extends View
       @h6 "#{start.format(dateFormat)} and #{end.format(dateFormat)}"
       @ul =>
         for commit in commitData
-          authorDate = moment.unix(commit.authorDate)
+          authorDate = moment(commit.authorDate)
           linesAdded = commit.linesAdded || 0
           linesDeleted = commit.linesDeleted || 0
           @li "data-rev": commit.hash, click: '_onShowRevision', =>
             @div class: "commit", =>
               @div class: "header", =>
                 @div "#{authorDate.format(dateFormat)}"
-                @div "#{commit.hash}"
+                @div "#{commit.hash.slice(0, 12)}"
                 @div =>
                   @span class: 'added-count', "+#{linesAdded} "
                   @span class: 'removed-count', "-#{linesDeleted} "
@@ -28,7 +28,7 @@ module.exports = class GitTimeplotPopup extends View
               @div =>
                 @strong "#{commit.message}"
 
-              @div "Authored by #{commit.authorName} #{authorDate.fromNow()}"
+              @div "Authored by #{commit.author} #{authorDate.fromNow()}"
 
 
   initialize: (commitData, @editor) ->
@@ -37,7 +37,7 @@ module.exports = class GitTimeplotPopup extends View
     @mouseenter @_onMouseEnter
     @mouseleave @_onMouseLeave
 
-    
+
   hide: () =>
     @_mouseInPopup = false
     super
@@ -66,4 +66,3 @@ module.exports = class GitTimeplotPopup extends View
   _onShowRevision: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
     RevisionView.showRevision(@editor, revHash)
-

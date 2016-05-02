@@ -4,7 +4,8 @@ _ = require('underscore-plus')
 str = require('bumble-strings')
 moment = require('moment')
 
-GitLog = require 'git-log-utils'
+GitLog = require 'atom-libgit2-log-utils'
+
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
 
@@ -28,17 +29,26 @@ class GitTimeMachineView
 
 
   render: () ->
-    commits = @gitCommitHistory()
-    unless @file? && commits?
-      @_renderPlaceholder()
-    else
-      @$element.text("")
-      @_renderCloseHandle()
-      @_renderStats(commits)
-      @_renderTimeline(commits)
+    GitLog.getCommitHistory(@file)
+    .then (commits) =>
+      unless @file? && commits?.length > 0
+        @_renderPlaceholder()
+      else
+        @_renderPanel(commits)
+
+    .catch (error) ->
+      if error.weaklyHas(error, NOT_GIT_ERRORS)
+        console.warn "#{file} not in a git repository"
+      else
+        throw error
 
     return @$element
 
+  _renderPanel: (commits) ->
+    @$element.text("")
+    @_renderCloseHandle()
+    @_renderStats(commits)
+    @_renderTimeline(commits)
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -61,22 +71,6 @@ class GitTimeMachineView
   getElement: ->
     return @$element.get(0)
 
-
-  gitCommitHistory: (file=@file)->
-    return null unless file?
-    try
-      commits = GitLog.getCommitHistory file
-    catch e
-      if e.message?
-        if str.weaklyHas(e.message, NOT_GIT_ERRORS)
-          console.warn "#{file} not in a git repository"
-          return null
-      
-      atom.notifications.addError String e
-      console.error e
-      return null
-
-    return commits;
 
   _renderPlaceholder: () ->
     @$element.html("<div class='placeholder'>Select a file in the git repo to see timeline</div>")
@@ -104,9 +98,9 @@ class GitTimeMachineView
   _renderStats: (commits) ->
     content = ""
     if commits.length > 0
-      byAuthor = _.indexBy commits, 'authorName'
+      byAuthor = _.indexBy commits, 'author'
       authorCount = _.keys(byAuthor).length
-      durationInMs = moment.unix(commits[commits.length - 1].authorDate).diff(moment.unix(commits[0].authorDate))
+      durationInMs = moment(commits[commits.length - 1].authorDate).diff(moment(commits[0].authorDate))
       timeSpan = moment.duration(durationInMs).humanize()
       content = "<span class='total-commits'>#{commits.length}</span> commits by #{authorCount} authors spanning #{timeSpan}"
     @$element.append """

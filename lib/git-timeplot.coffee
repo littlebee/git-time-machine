@@ -60,10 +60,10 @@ module.exports = class GitTimeplot
     h = 100
     left_pad = 20
     pad = 20
-    minDate = moment.unix(@commitData[@commitData.length-1].authorDate).toDate()
-    maxDate = moment.unix(@commitData[0].authorDate).toDate()
-    minHour = d3.min(@commitData.map((d)->moment.unix(d.authorDate).hour()))
-    maxHour = d3.max(@commitData.map((d)->moment.unix(d.authorDate).hour()))
+    minDate = moment(@commitData[@commitData.length-1].authorDate).toDate()
+    maxDate = moment(@commitData[0].authorDate).toDate()
+    minHour = d3.min(@commitData.map((d)->moment(d.authorDate).hour()))
+    maxHour = d3.max(@commitData.map((d)->moment(d.authorDate).hour()))
 
     @x = d3.time.scale().domain([minDate, maxDate]).range([left_pad, w-pad])
     @y = d3.scale.linear().domain([minHour, maxHour]).range([10, h-pad*2])
@@ -93,8 +93,8 @@ module.exports = class GitTimeplot
     .enter()
     .append("circle")
     .attr("class", "circle")
-    .attr("cx", (d)=> @x(moment.unix(d.authorDate).toDate()))
-    .attr("cy", (d)=> @y(moment.unix(d.authorDate).hour()))
+    .attr("cx", (d)=> @x(moment(d.authorDate).toDate()))
+    .attr("cy", (d)=> @y(moment(d.authorDate).hour()))
     .transition()
     .duration(500)
     .attr("r", (d) -> r(d.linesAdded + d.linesDeleted || 0))
@@ -191,7 +191,7 @@ module.exports = class GitTimeplot
     relativeLeft = left - @$element.offset().left - 5
     tStart = moment(@x.invert(relativeLeft)).startOf('hour').subtract(1, 'minute')
     tEnd = moment(@x.invert(relativeLeft + 10)).endOf('hour').add(1, 'minute')
-    commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
+    commits = _.filter @commitData, (c) -> moment(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
 
@@ -201,7 +201,7 @@ module.exports = class GitTimeplot
     if filteredCommitData?.length > 0
       return filteredCommitData[0]
     else
-      return _.find @commitData, (c) -> moment.unix(c.authorDate).isBefore(tEnd)
+      return _.find @commitData, (c) -> moment(c.authorDate).isBefore(tEnd)
 
 
   _viewNearestRevision: () ->
