@@ -1,5 +1,5 @@
 GitTimeMachineView = require './git-time-machine-view'
-{TextEditor, CompositeDisposable} = require 'atom'
+{CompositeDisposable} = require 'atom'
 
 module.exports = GitTimeMachine =
   gitTimeMachineView: null
