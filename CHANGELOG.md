@@ -1,5 +1,13 @@
 
 <a name="1.2.3"></a>
+## [1.5.3](https://github.com/littlebee/git-time-machine/compare/1.5.2...1.5.3) (2016-05-145)
+Upgrade split diff dependency and fix deprecation.  Thanks Alhadis and Michael!   Very much appreciated.
+
+### Other Commits
+* [d968cb3](https://github.com/littlebee/git-time-machine/commit/d968cb37bc05825f266115a4858e086caf0ce80a) Merge pull request #61 from Alhadis/master
+* [a9ffea7](https://github.com/littlebee/git-time-machine/commit/a9ffea79e896f2dd7d8bc6d7fe93354ae1dd2402) Fix deprecation notice in package's entry point
+* [d8da44c](https://github.com/littlebee/git-time-machine/commit/d8da44c63740139c90579bbea46a92363d7b6a14) updates split diff dependency to v0.8.3
+
 ## [1.5.2](https://github.com/littlebee/git-time-machine/compare/1.5.1...1.5.2) (2016-04-121)
 
 
