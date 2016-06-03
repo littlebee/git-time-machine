@@ -10,7 +10,7 @@
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'git-time-machine'
+      'label': 'Git Time Machine'
       'submenu': [
         {
           'label': 'Toggle for current file'
