@@ -17,6 +17,8 @@ class GitTimeMachineView
     if options.editor?
       @setEditor(options.editor)
       @render()
+      
+    @_bindWindowEvents()
 
 
   setEditor: (editor) ->
@@ -47,9 +49,10 @@ class GitTimeMachineView
 
   # Tear down any state and detach
   destroy: ->
-    return @$element.remove()
-
-
+    @_unbindWindowEvents()
+    @$element.remove()
+    
+    
   hide: ->
     @timeplot?.hide()   # so it knows to hide the popup
 
@@ -77,6 +80,17 @@ class GitTimeMachineView
       return null
 
     return commits;
+
+
+
+
+  _bindWindowEvents: () ->
+    $(window).on 'resize', @_onEditorResize 
+    
+    
+  _unbindWindowEvents: () ->
+    $(window).off 'resize', @_onEditorResize
+
 
   _renderPlaceholder: () ->
     @$element.html("<div class='placeholder'>Select a file in the git repo to see timeline</div>")
@@ -115,3 +129,8 @@ class GitTimeMachineView
       </div>
     """
     return
+
+
+  _onEditorResize: =>
+    @render()
+    
