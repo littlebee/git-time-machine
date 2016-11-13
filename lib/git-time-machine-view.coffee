@@ -4,7 +4,9 @@ _ = require('underscore-plus')
 str = require('bumble-strings')
 moment = require('moment')
 
-GitLog = require 'atom-libgit2-log-utils'
+nodegit = require('atom').GitRepositoryAsync.Git
+GitLogUtils = require('libgit2-log-utils')
+gitLogUtils = new GitLogUtils(nodegit)
 
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
@@ -29,7 +31,7 @@ class GitTimeMachineView
 
 
   render: () ->
-    GitLog.getCommitHistory(@file)
+    gitLogUtils.getCommitHistory(@file)
     .then (commits) =>
       unless @file? && commits?.length > 0
         @_renderPlaceholder()
