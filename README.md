@@ -9,11 +9,11 @@ To open the timeplot, just use the keyboard shortcut <kbd>alt</kbd>+<kbd>t</kbd>
 
 ## Troubleshooting
 
-Unfortunately, git-time-machine, like the other Atom `git log` services,  needs to shell out to the command line git executable and parse it's stdout.  We are working on getting this information another way, but that may take some time.  As you might imagine, this is problematic.
+Unfortunately, git-time-machine, like the other Atom `git log` services,  needs to shell out to the command line git executable and parse its stdout.  We are working on getting this information another way, but that may take some time.  As you might imagine, this is problematic.
 
 Some things to check:
 - git command line utility needs to be in your path
 - can you install and use git-log Atom package?
 - it's been brought to my attention that some versions of git command line utilities (speculation: the version of git installed by github windows client) is not fully compatible with the official git client and doesn't support the pretty format needed to get the data to render the timeplot.  
 
-Recommend installing the official Git client from here: https://git-scm.com/downloads and make sure it's binary is the one in your path.
+Recommend installing the official Git client from here: https://git-scm.com/downloads and make sure its binary is the one in your path.
