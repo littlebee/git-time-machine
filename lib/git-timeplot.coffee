@@ -5,8 +5,6 @@ moment = require 'moment'
 d3 = require 'd3'
 
 GitTimeplotPopup = require './git-timeplot-popup'
-RevisionView = require './git-revision-view'
-
 
 
 module.exports = class GitTimeplot
@@ -28,7 +26,7 @@ module.exports = class GitTimeplot
 
   # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
-  render: (@editor, @commitData) ->
+  render: (@editor, @commitData, @onViewRevision) ->
     @popup?.remove()
 
     @file = @editor.getPath()
@@ -148,6 +146,11 @@ module.exports = class GitTimeplot
 
   _onMouseup: (evt) ->
     @isMouseDown = false
+    
+    
+  _onViewRevision: (revHash) =>
+    # pass along up the component stack
+    @onViewRevision(revHash)
 
 
   _renderPopup: () ->
@@ -163,7 +166,7 @@ module.exports = class GitTimeplot
 
     @popup?.hide().remove()
     [commits, start, end] = @_filterCommitData(@commitData)
-    @popup = new GitTimeplotPopup(commits, @editor, start, end)
+    @popup = new GitTimeplotPopup(@editor, commits, start, end, @_onViewRevision)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
@@ -207,4 +210,4 @@ module.exports = class GitTimeplot
   _viewNearestRevision: () ->
     nearestCommit =  @_getNearestCommit()
     if nearestCommit?
-      RevisionView.showRevision(@editor, nearestCommit.hash)
+      @_onViewRevision(nearestCommit)

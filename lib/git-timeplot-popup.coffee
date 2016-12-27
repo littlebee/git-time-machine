@@ -1,12 +1,9 @@
 moment = require 'moment'
 {$, View} = require "atom-space-pen-views"
 
-RevisionView = require './git-revision-view'
-
-
 module.exports = class GitTimeplotPopup extends View
 
-  @content = (commitData, editor, start, end) ->
+  @content = (editor, commitData, start, end) ->
     dateFormat = "MMM DD YYYY ha"
     @div class: "select-list popover-list git-timemachine-popup", =>
       @h5 "There were #{commitData.length} commits between"
@@ -31,7 +28,7 @@ module.exports = class GitTimeplotPopup extends View
               @div "Authored by #{commit.authorName} #{authorDate.fromNow()}"
 
 
-  initialize: (commitData, @editor) ->
+  initialize: (@editor, commitData, start, end, @onViewRevision) ->
     @file = @editor.getPath()
     @appendTo atom.views.getView atom.workspace
     @mouseenter @_onMouseEnter
@@ -65,5 +62,4 @@ module.exports = class GitTimeplotPopup extends View
 
   _onShowRevision: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
-    RevisionView.showRevision(@editor, revHash)
-
+    @onViewRevision(revHash)

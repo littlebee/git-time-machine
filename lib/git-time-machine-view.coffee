@@ -24,20 +24,22 @@ class GitTimeMachineView
   setEditor: (editor) ->
     return unless editor != @editor
     file = editor?.getPath()
+    
+    # don't try to process our temp rev file
     return unless file? && !str.startsWith(path.basename(file), GitRevisionView.FILE_PREFIX)
     [@editor, @file] = [editor, file]
     @render()
 
 
   render: () ->
-    commits = @gitCommitHistory()
-    unless @file? && commits?
+    @commits = @gitCommitHistory()
+    unless @file? && @commits?
       @_renderPlaceholder()
     else
       @$element.text("")
       @_renderCloseHandle()
-      @_renderStats(commits)
-      @_renderTimeline(commits)
+      @_renderTimeplot(@commits)
+      @_renderStats(@commits)
 
     return @$element
 
@@ -109,9 +111,9 @@ class GitTimeMachineView
 
 
 
-  _renderTimeline: (commits) ->
+  _renderTimeplot: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
-    @timeplot.render(@editor, commits)
+    @timeplot.render(@editor, commits, @_onViewRevision)
     return
 
 
@@ -129,6 +131,14 @@ class GitTimeMachineView
       </div>
     """
     return
+
+  
+  _onViewRevision: (revHash) =>
+    GitRevisionView.showRevision(@editor, revHash)
+    
+      
+     
+    
 
 
   _onEditorResize: =>
