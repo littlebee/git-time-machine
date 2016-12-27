@@ -30,7 +30,8 @@ class GitRevisionView
     options = _.defaults options,
       diff: false
 
-    SplitDiff.disable(false)
+    # TODO : figure out why this was here. Seems to work fine without
+    # SplitDiff.disable(false)
 
     file = editor.getPath()
 

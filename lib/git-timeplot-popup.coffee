@@ -3,7 +3,7 @@ moment = require 'moment'
 
 module.exports = class GitTimeplotPopup extends View
 
-  @content = (editor, commitData, start, end) ->
+  @content = (commitData, start, end) ->
     dateFormat = "MMM DD YYYY ha"
     @div class: "select-list popover-list git-timemachine-popup", =>
       @h5 "There were #{commitData.length} commits between"
@@ -13,7 +13,7 @@ module.exports = class GitTimeplotPopup extends View
           authorDate = moment.unix(commit.authorDate)
           linesAdded = commit.linesAdded || 0
           linesDeleted = commit.linesDeleted || 0
-          @li "data-rev": commit.hash, click: '_onShowRevision', =>
+          @li "data-rev": commit.id, click: '_onRevisionClick', =>
             @div class: "commit", =>
               @div class: "header", =>
                 @div "#{authorDate.format(dateFormat)}"
@@ -28,8 +28,7 @@ module.exports = class GitTimeplotPopup extends View
               @div "Authored by #{commit.authorName} #{authorDate.fromNow()}"
 
 
-  initialize: (@editor, commitData, start, end, @onViewRevision) ->
-    @file = @editor.getPath()
+  initialize: (commitData, start, end, @onViewRevision) ->
     @appendTo atom.views.getView atom.workspace
     @mouseenter @_onMouseEnter
     @mouseleave @_onMouseLeave
@@ -60,6 +59,6 @@ module.exports = class GitTimeplotPopup extends View
     return
 
 
-  _onShowRevision: (evt) =>
+  _onRevisionClick: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
-    @onViewRevision(revHash)
+    @onViewRevision(revHash, evt.shiftKey)

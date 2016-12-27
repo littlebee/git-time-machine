@@ -85,7 +85,6 @@ class GitTimeMachineView
 
 
 
-
   _bindWindowEvents: () ->
     $(window).on 'resize', @_onEditorResize 
     
@@ -110,7 +109,6 @@ class GitTimeMachineView
       atom.commands.dispatch(atom.views.getView(atom.workspace), "git-time-machine:toggle")
 
 
-
   _renderTimeplot: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
     @timeplot.render(@editor, commits, @_onViewRevision)
@@ -133,14 +131,10 @@ class GitTimeMachineView
     return
 
   
-  _onViewRevision: (revHash) =>
-    GitRevisionView.showRevision(@editor, revHash)
+  _onViewRevision: (revHash, reverse) =>
+    GitRevisionView.showRevision(@editor, revHash, {reverse: reverse})
     
       
-     
-    
-
-
   _onEditorResize: =>
     @render()
     

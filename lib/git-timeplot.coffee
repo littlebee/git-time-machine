@@ -126,7 +126,7 @@ module.exports = class GitTimeplot
 
     if @isMouseDown
       @_hidePopup(force: true)
-      @_debouncedViewNearestRevision()
+      @_debouncedViewNearestRevision(evt.shiftKey)
     else
       @_debouncedRenderPopup()
 
@@ -148,9 +148,9 @@ module.exports = class GitTimeplot
     @isMouseDown = false
     
     
-  _onViewRevision: (revHash) =>
+  _onViewRevision: (revHash, reverse) =>
     # pass along up the component stack
-    @onViewRevision(revHash)
+    @onViewRevision(revHash, reverse)
 
 
   _renderPopup: () ->
@@ -166,7 +166,7 @@ module.exports = class GitTimeplot
 
     @popup?.hide().remove()
     [commits, start, end] = @_filterCommitData(@commitData)
-    @popup = new GitTimeplotPopup(@editor, commits, start, end, @_onViewRevision)
+    @popup = new GitTimeplotPopup(commits, start, end, @_onViewRevision)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
@@ -207,7 +207,7 @@ module.exports = class GitTimeplot
       return _.find @commitData, (c) -> moment.unix(c.authorDate).isBefore(tEnd)
 
 
-  _viewNearestRevision: () ->
+  _viewNearestRevision: (reverse) ->
     nearestCommit =  @_getNearestCommit()
     if nearestCommit?
-      @_onViewRevision(nearestCommit)
+      @_onViewRevision(nearestCommit.id, reverse)
