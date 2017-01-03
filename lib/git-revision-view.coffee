@@ -1,6 +1,8 @@
 _ = require 'underscore-plus'
 path = require 'path'
 fs = require 'fs'
+str = require('bumble-strings')
+
 
 {CompositeDisposable, BufferedProcess} = require "atom"
 {$} = require "atom-space-pen-views"
@@ -30,9 +32,6 @@ class GitRevisionView
     options = _.defaults options,
       diff: false
 
-    # TODO : figure out why this was here. Seems to work fine without
-    # SplitDiff.disable(false)
-
     file = editor.getPath()
 
     fileContents = ""
@@ -46,6 +45,23 @@ class GitRevisionView
 
     @_loadRevision file, revHash, stdout, exit
 
+
+  # returns the pane and it's index (left to right) in workspace.getPanes()
+  @findEditorPane: (editor) ->
+    for pane, paneIndex in atom.workspace.getPanes()
+      for item in pane.getItems()
+        return [pane, paneIndex] if item == editor
+    
+    return [null, null]
+
+
+  # returns the baseFileName of the original file or null if the editor is not a TimeMachine opened revision
+  @isTimeMachineRevisionEditor: (editor) ->
+    fileName = editor.getFileName?()
+    return null unless fileName?
+    matches = fileName.match new RegExp("^#{@FILE_PREFIX}(.*)")
+    return matches?[1] || null
+    
 
   @_loadRevision: (file, hash, stdout, exit) ->
     showArgs = [
@@ -80,43 +96,48 @@ class GitRevisionView
     outputFilePath = "#{outputDir}/#{@FILE_PREFIX}#{path.basename(file)}"
     outputFilePath += ".diff" if options.diff
     tempContent = "Loading..." + editor.buffer?.lineEndingForRow(0)
+    
+    
     fs.writeFile outputFilePath, tempContent, (error) =>
       if not error
         # editor (current rev) may have been destroyed, workspace.open will find or
         # reopen it
         promise = atom.workspace.open file,
-          split: "left"
           activatePane: false
           activateItem: true
-          searchAllPanes: false
+          searchAllPanes: true
         promise.then (editor) =>
+          [pane, paneIndex] = @findEditorPane(editor)
+          if paneIndex == 0
+            pane.splitLeft()
+          else
+            atom.workspace.activatePreviousPane()
+            
           promise = atom.workspace.open outputFilePath,
-            split: "right"
-            activatePane: false
             activateItem: true
             searchAllPanes: false
           promise.then (newTextEditor) =>
             @_updateNewTextEditor(newTextEditor, editor, revHash, fileContents)
+            pane.activate()
+            
 
 
 
 
   @_updateNewTextEditor: (newTextEditor, editor, revHash, fileContents) ->
-    # slight delay so the user gets feedback on their action
-    _.delay =>
-      lineEnding = editor.buffer?.lineEndingForRow(0) || "\n"
-      fileContents = fileContents.replace(/(\r\n|\n)/g, lineEnding)
-      newTextEditor.buffer.setPreferredLineEnding(lineEnding)
-      newTextEditor.setText(fileContents)
+    lineEnding = editor.buffer?.lineEndingForRow(0) || "\n"
+    fileContents = fileContents.replace(/(\r\n|\n)/g, lineEnding)
+    newTextEditor.buffer.setPreferredLineEnding(lineEnding)
+    newTextEditor.setText(fileContents)
 
-      # HACK ALERT: this is prone to eventually fail. Don't show user change
-      #  "would you like to save" message between changes to rev being viewed
-      newTextEditor.buffer.cachedDiskContents = fileContents
+    # HACK ALERT: this is prone to eventually fail. Don't show user change
+    #  "would you like to save" message between changes to rev being viewed
+    newTextEditor.buffer.cachedDiskContents = fileContents
 
-      @_splitDiff(editor, newTextEditor)
-      @_syncScroll(editor, newTextEditor)
-      @_affixTabTitle newTextEditor, revHash
-    , 300
+    @splitDiff(editor, newTextEditor)
+    @syncScroll(editor, newTextEditor)
+    @_affixTabTitle newTextEditor, revHash
+
 
 
   @_affixTabTitle: (newTextEditor, revHash) ->
@@ -133,7 +154,7 @@ class GitRevisionView
     $tabTitle.text(titleText)
 
 
-  @_splitDiff: (editor, newTextEditor) ->
+  @splitDiff: (editor, newTextEditor) ->
     editors =
       editor1: newTextEditor    # the older revision
       editor2: editor           # current rev
@@ -160,10 +181,17 @@ class GitRevisionView
 
 
   # sync scroll to editor that we are show revision for
-  @_syncScroll: (editor, newTextEditor) ->
+  @syncScroll: (editor, newTextEditor) ->
     # without the delay, the scroll position will fluctuate slightly beween
     # calls to editor setText
     _.delay =>
       return if newTextEditor.isDestroyed()
       newTextEditor.scrollToBufferPosition({row: @_getInitialLineNumber(editor), column: 0})
     , 50
+    
+  
+  
+    
+      
+    
+    

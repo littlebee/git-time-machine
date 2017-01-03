@@ -22,13 +22,13 @@ class GitTimeMachineView
 
 
   setEditor: (editor) ->
-    return unless editor != @editor
+    return if !editor? || editor == @editor
     file = editor?.getPath()
+    return unless file?
     
-    # don't try to process our temp rev file
-    return unless file? && !str.startsWith(path.basename(file), GitRevisionView.FILE_PREFIX)
     [@editor, @file] = [editor, file]
     @render()
+    @loadExistingRevForEditor(editor)
 
 
   render: () ->
@@ -84,6 +84,50 @@ class GitTimeMachineView
     return commits;
 
 
+  loadExistingRevForEditor: (editor=@editor) ->
+    tmEditor = @activateTimeMachineEditorForEditor(editor)
+    return false unless tmEditor?
+    GitRevisionView.splitDiff(editor, tmEditor)
+    GitRevisionView.syncScroll(editor, tmEditor)
+    
+    
+  # search the pane left of the curent editor for a time machine rev editor
+  activateTimeMachineEditorForEditor: (editor=@editor) ->
+    # null unless in a Time Machine - ... tab
+    fileName = editor.getFileName?()
+    tmRevFileName = GitRevisionView.isTimeMachineRevisionEditor(editor)
+    
+    [pane, paneIndex] = GitRevisionView.findEditorPane(editor)
+    return null if !(fileName? || tmRevFileName?) || !pane? 
+    
+    searchPane = if tmRevFileName?
+      atom.workspace.getPanes()[paneIndex + 1]
+    else
+      atom.workspace.getPanes()[paneIndex - 1]
+    return null unless searchPane?
+    
+    tmEditor = null
+    for item in searchPane.getItems()
+      if tmRevFileName?   # ... we are trying to find the base file for the time machine rev (reverse search)
+        itemFileName = item.getFileName?()
+        continue unless itemFileName?
+        itemBaseName = path.basename(itemFileName)
+        if itemBaseName.match(tmRevFileName)
+          tmEditor = item 
+          unless searchPane.getActiveItem() == tmEditor
+            searchPane.activateItem(tmEditor) # bring it forward and stay on it
+            searchPane.activate()
+          break
+      else
+        tmEditorFile = GitRevisionView.isTimeMachineRevisionEditor(item)
+        if tmEditorFile?.match(fileName)
+          tmEditor = item
+          unless searchPane.getActiveItem() == tmEditor
+            searchPane.activateItem(tmEditor) # bring it forward
+          break
+    
+    return tmEditor
+      
 
   _bindWindowEvents: () ->
     $(window).on 'resize', @_onEditorResize 
@@ -133,6 +177,7 @@ class GitTimeMachineView
   
   _onViewRevision: (revHash, reverse) =>
     GitRevisionView.showRevision(@editor, revHash, {reverse: reverse})
+    
     
       
   _onEditorResize: =>
