@@ -3,6 +3,7 @@
 // See https://github.com/atom/atom-dark-ui/blob/master/styles/ui-variables.less
 // for a full listing of what's available.
 @import "ui-variables";
+@import "syntax-variables";
 @import "../node_modules/split-diff/styles/split-diff.less";
 
 .git-time-machine {
@@ -62,13 +63,23 @@
       opacity: .3;
   }
 
-  .hover-marker {
+  .rev-marker(@backgroundColor) {
+    background-color: @backgroundColor;
     position: absolute;
     height: ~"calc(100% - 25px)";
     width: 5px;
     top: 0px;
-    right: 10px;
-    background-color: @pane-item-border-color;
+  }
+  .hover-marker {
+    .rev-marker(@pane-item-border-color);    
+  }
+
+  .left-rev-marker {
+    .rev-marker(fade(@syntax-color-removed, 80%););
+  }
+
+  .right-rev-marker {
+    .rev-marker(fade(@syntax-color-added, 80%););
   }
 
 }

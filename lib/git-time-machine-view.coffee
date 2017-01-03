@@ -124,9 +124,9 @@ class GitTimeMachineView
     # null unless in a Time Machine - ... tab
     returnEditor = null
     fileName = editor.getPath?()
-    tmRevFileName = editor.__gitTimeMachine?.sourceEditor?.getPath()
+    leftRevFileName = editor.__gitTimeMachine?.sourceEditor?.getPath()
     
-    return null if !(fileName? || tmRevFileName?) || !editor.__gitTimeMachine?
+    return null if !(fileName? || leftRevFileName?) || !editor.__gitTimeMachine?
     
     sourceEditor = editor.__gitTimeMachine.sourceEditor
     leftRevEditor = editor.__gitTimeMachine.leftRevEditor
@@ -167,7 +167,7 @@ class GitTimeMachineView
 
   _renderTimeplot: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
-    @timeplot.render(@editor, commits, @_onViewRevision)
+    @timeplot.render(commits, @_onViewRevision)
     return
 
 
@@ -189,6 +189,7 @@ class GitTimeMachineView
   
   _onViewRevision: (@leftRevHash, reverse) =>
     GitRevisionView.showRevision(@editor, @leftRevHash, {reverse: reverse})
+    @timeplot.setRevisions(@leftRevHash, null)
     
     
       

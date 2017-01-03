@@ -14,6 +14,8 @@ module.exports = class GitTimeplot
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
+    @leftRevHash = undefined    # don't show a left rev until the user selects a rev
+    @rightRevHash = null
 
 
   hide: () ->
@@ -26,10 +28,8 @@ module.exports = class GitTimeplot
 
   # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
-  render: (@editor, @commitData, @onViewRevision) ->
+  render: (@commitData, @onViewRevision) ->
     @popup?.remove()
-
-    @file = @editor.getPath()
 
     @$timeplot = @$element.find('.timeplot')
     if @$timeplot.length <= 0
@@ -49,8 +49,14 @@ module.exports = class GitTimeplot
     @_renderBlobs(svg)
 
     @_renderHoverMarker()
+    @_renderRevMarkers()
+    @_bindMouseEvents()
 
     return @$timeplot;
+    
+  
+  setRevisions: (@leftRevHash, @rightRevHash) ->
+    @_renderRevMarkers()
 
 
   _renderAxis: (svg) ->
@@ -98,13 +104,45 @@ module.exports = class GitTimeplot
     .attr("r", (d) -> r(d.linesAdded + d.linesDeleted || 0))
 
 
-  # hover marker is the green vertical line that follows the mouse on the timeplot
+  # hover marker is the gray vertical line that follows the mouse on the timeplot
   _renderHoverMarker: () ->
     @$hoverMarker = @$element.find('.hover-marker')
     unless @$hoverMarker.length > 0
       @$hoverMarker = $("<div class='hover-marker'>")
       @$element.append(@$hoverMarker)
 
+
+  _renderRevMarkers: () ->
+    @_renderRevMarker('left')
+    @_renderRevMarker('right')
+    
+    if @_leftRev 
+      # we don't show the red marker until we have a left revision
+      @$element.find('.left-rev-marker').show()
+    
+    
+  # whichRev should be 'left' or 'right'
+  _renderRevMarker: (whichRev) ->
+    $revMarker = @$element.find(".#{whichRev}-rev-marker")
+    unless $revMarker.length > 0
+      $revMarker = $("<div class='#{whichRev}-rev-marker'>")
+      @$element.append($revMarker)
+    
+    revHash = @["#{whichRev}RevHash"]
+    unless revHash?
+      if revHash == null
+        $revMarker.show().css('right', 10)
+      else
+        $revMarker.hide()
+      return
+    
+    commit = @_findCommit(revHash)
+    return unless commit?
+    
+    $revMarker.show().css 'left', @x(moment.unix(commit.authorDate).toDate())
+    
+
+  _bindMouseEvents: () =>
     _this = @
     @$element.mouseenter (e) -> _this._onMouseenter(e)
     @$element.mousemove (e) -> _this._onMousemove(e)
@@ -149,7 +187,8 @@ module.exports = class GitTimeplot
     
     
   _onViewRevision: (revHash, reverse) =>
-    # pass along up the component stack
+    # pass along up the component stack. note that we don't update @leftRevHash and @rightRevHash until
+    # the container component calls setRevisions in response to this 
     @onViewRevision(revHash, reverse)
 
 
@@ -197,6 +236,11 @@ module.exports = class GitTimeplot
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
+    
+  
+  _findCommit: (revHash) ->
+    _.find @commitData, (d) -> d.id == revHash || d.hash == revHash
+    
 
   # return the nearest commit to hover marker or previous
   _getNearestCommit: () ->
