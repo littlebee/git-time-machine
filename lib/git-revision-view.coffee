@@ -47,6 +47,8 @@ class GitRevisionView
     @_loadRevision file, revHash, stdout, exit
 
 
+  @isActivating: false
+
   # returns the pane and it's index (left to right) in workspace.getPanes()
   @findEditorPane: (editor) ->
     for pane, paneIndex in atom.workspace.getPanes()
@@ -93,6 +95,7 @@ class GitRevisionView
     
     fs.writeFile outputFilePath, tempContent, (error) =>
       if not error
+        @isActivating = true
         # editor (current rev) may have been destroyed, workspace.open will find or
         # reopen it
         promise = atom.workspace.open file,
@@ -113,6 +116,7 @@ class GitRevisionView
           promise.then (newTextEditor) =>
             @_updateEditors(newTextEditor, editor, revHash, fileContents)
             pane.activate()
+            @isActivating = false
             
 
 

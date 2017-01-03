@@ -22,7 +22,7 @@ class GitTimeMachineView
 
 
   setEditor: (editor) ->
-    return if !editor? || editor == @editor
+    return if !editor? || editor == @editor || GitRevisionView.isActivating
     file = editor?.getPath()
     return unless file?
     
@@ -70,7 +70,7 @@ class GitTimeMachineView
 
   gitCommitHistory: (editor=@editor)->
     # get the file name of the original file if on a timemachine editor
-    file = editor.__gitTimeMachine?.sourceEditor?.getPath() || editor.getPath()
+    file = editor?.__gitTimeMachine?.sourceEditor?.getPath() || editor?.getPath()
     return null unless file?
     
     try
@@ -89,11 +89,33 @@ class GitTimeMachineView
 
 
   loadExistingRevForEditor: (editor=@editor) ->
-    tmEditor = @activateTimeMachineEditorForEditor(editor)
-    return false unless tmEditor?
-    GitRevisionView.splitDiff(editor, tmEditor)
-    GitRevisionView.syncScroll(editor, tmEditor)
+    return unless editor.__gitTimeMachine?
     
+    _.defer =>
+      [sourceEditor, revEditor] = [editor.__gitTimeMachine.sourceEditor, editor.__gitTimeMachine.leftRevEditor]
+      unless sourceEditor.isDestroyed() || revEditor.isDestroyed()
+        @activateTimeMachineEditorForEditor(editor) unless editor.isDestroyed()
+        GitRevisionView.splitDiff(sourceEditor, revEditor)
+        GitRevisionView.syncScroll(sourceEditor, revEditor)
+    
+    
+  destroyEditor: (editor=@editor) ->
+    return unless editor.__gitTimeMachine?
+    [sourceEditor, revEditor] = [editor.__gitTimeMachine.sourceEditor, editor.__gitTimeMachine.leftRevEditor]
+    sourceEditor.__gitTimeMachine = null
+    revEditor.__gitTimeMachine = null
+    if sourceEditor == editor
+      revEditor.destroy()
+    
+    if @editor in [sourceEditor, revEditor]
+      @editor = null 
+    else
+      if @editor.__gitTimeMachine?
+        [sourceEditor, revEditor] = [@editor.__gitTimeMachine.sourceEditor, @editor.__gitTimeMachine.leftRevEditor]
+        GitRevisionView.splitDiff(sourceEditor, revEditor)
+        GitRevisionView.syncScroll(sourceEditor, revEditor)
+      
+
     
   # search the pane left of the curent editor for a time machine rev editor
   activateTimeMachineEditorForEditor: (editor=@editor) ->
@@ -108,9 +130,9 @@ class GitTimeMachineView
     leftRevEditor = editor.__gitTimeMachine.leftRevEditor
     
     leftRevPane = GitRevisionView.findEditorPane(leftRevEditor)[0]
-    leftRevPane.activateItem(leftRevEditor)
+    leftRevPane?.activateItem(leftRevEditor)
     sourcePane = GitRevisionView.findEditorPane(sourceEditor)[0]
-    sourcePane.activateItem(sourceEditor)
+    sourcePane?.activateItem(sourceEditor)
     
     otherEditor = if sourceEditor == editor then leftRevEditor else sourceEditor
       
