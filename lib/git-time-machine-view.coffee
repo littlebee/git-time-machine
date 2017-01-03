@@ -92,6 +92,8 @@ class GitTimeMachineView
     return unless editor.__gitTimeMachine?
     
     _.defer =>
+      return unless editor.__gitTimeMachine?
+      
       [sourceEditor, revEditor] = [editor.__gitTimeMachine.sourceEditor, editor.__gitTimeMachine.leftRevEditor]
       unless sourceEditor.isDestroyed() || revEditor.isDestroyed()
         @activateTimeMachineEditorForEditor(editor) unless editor.isDestroyed()
