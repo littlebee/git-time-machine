@@ -31,7 +31,8 @@ class GitRevisionView
   @showRevision: (editor, revHash, options={}) ->
     options = _.defaults options,
       diff: false
-
+    
+    editor = editor.__gitTimeMachine.sourceEditor if editor.__gitTimeMachine?.sourceEditor?
     file = editor.getPath()
 
     fileContents = ""
@@ -54,14 +55,6 @@ class GitRevisionView
     
     return [null, null]
 
-
-  # returns the baseFileName of the original file or null if the editor is not a TimeMachine opened revision
-  @isTimeMachineRevisionEditor: (editor) ->
-    fileName = editor.getFileName?()
-    return null unless fileName?
-    matches = fileName.match new RegExp("^#{@FILE_PREFIX}(.*)")
-    return matches?[1] || null
-    
 
   @_loadRevision: (file, hash, stdout, exit) ->
     showArgs = [
@@ -106,34 +99,43 @@ class GitRevisionView
           activatePane: false
           activateItem: true
           searchAllPanes: true
-        promise.then (editor) =>
+        promise.then (sourceEditor) =>
           [pane, paneIndex] = @findEditorPane(editor)
           if paneIndex == 0
             pane.splitLeft()
           else
-            atom.workspace.activatePreviousPane()
+            leftPane = atom.workspace.getPanes()[paneIndex - 1]
+            leftPane.activate() unless leftPane == atom.workspace.getActivePane()
             
           promise = atom.workspace.open outputFilePath,
             activateItem: true
             searchAllPanes: false
           promise.then (newTextEditor) =>
-            @_updateNewTextEditor(newTextEditor, editor, revHash, fileContents)
+            @_updateEditors(newTextEditor, editor, revHash, fileContents)
             pane.activate()
             
 
 
 
 
-  @_updateNewTextEditor: (newTextEditor, editor, revHash, fileContents) ->
+  @_updateEditors: (newTextEditor, editor, revHash, fileContents) ->
     lineEnding = editor.buffer?.lineEndingForRow(0) || "\n"
     fileContents = fileContents.replace(/(\r\n|\n)/g, lineEnding)
     newTextEditor.buffer.setPreferredLineEnding(lineEnding)
     newTextEditor.setText(fileContents)
+    
+    metadata = 
+      sourceEditor: editor
+      leftRevEditor: newTextEditor
+      leftRevHash: revHash
 
+    newTextEditor.__gitTimeMachine = metadata
+    editor.__gitTimeMachine = metadata
+    
     # HACK ALERT: this is prone to eventually fail. Don't show user change
     #  "would you like to save" message between changes to rev being viewed
     newTextEditor.buffer.cachedDiskContents = fileContents
-
+    
     @splitDiff(editor, newTextEditor)
     @syncScroll(editor, newTextEditor)
     @_affixTabTitle newTextEditor, revHash
