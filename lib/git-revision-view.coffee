@@ -28,7 +28,7 @@ class GitRevisionView
     thank you, @jakesankey!
 
   ###
-  @showRevision: (editor, revHash, options={}) ->
+  @showRevision: (editor, leftRevHash, rightRevHash, options={}) ->
     options = _.defaults options,
       diff: false
     
@@ -40,11 +40,11 @@ class GitRevisionView
         fileContents += output
     exit = (code) =>
       if code is 0
-        @_showRevision(file, editor, revHash, fileContents, options)
+        @_showRevision(file, editor, leftRevHash, fileContents, options)
       else
         atom.notifications.addError "Could not retrieve revision for #{path.basename(file)} (#{code})"
 
-    @_loadRevision file, revHash, stdout, exit
+    @_loadRevision file, leftRevHash, stdout, exit
 
 
   @isActivating: false

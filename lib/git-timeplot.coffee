@@ -14,7 +14,7 @@ module.exports = class GitTimeplot
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
-    @leftRevHash = undefined    # don't show a left rev until the user selects a rev
+    @leftRevHash = undefined    # don't show a left rev marker until the user selects a rev
     @rightRevHash = null
 
 
@@ -130,10 +130,7 @@ module.exports = class GitTimeplot
     
     revHash = @["#{whichRev}RevHash"]
     unless revHash?
-      if revHash == null
-        $revMarker.show().css('right', 10)
-      else
-        $revMarker.hide()
+      $revMarker.show().css('right', 10)
       return
     
     commit = @_findCommit(revHash)
@@ -179,7 +176,7 @@ module.exports = class GitTimeplot
   _onMousedown: (evt) ->
     @isMouseDown = true
     @_hidePopup(force: true)
-    @_debouncedViewNearestRevision()
+    @_debouncedViewNearestRevision(evt.shiftKey)
 
 
   _onMouseup: (evt) ->
@@ -233,6 +230,7 @@ module.exports = class GitTimeplot
     relativeLeft = left - @$element.offset().left - 5
     tStart = moment(@x.invert(relativeLeft)).startOf('hour').subtract(1, 'minute')
     tEnd = moment(@x.invert(relativeLeft + 10)).endOf('hour').add(1, 'minute')
+    
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];

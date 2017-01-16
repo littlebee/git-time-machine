@@ -187,12 +187,35 @@ class GitTimeMachineView
     return
 
   
-  _onViewRevision: (@leftRevHash, reverse) =>
-    GitRevisionView.showRevision(@editor, @leftRevHash, {reverse: reverse})
-    @timeplot.setRevisions(@leftRevHash, null)
+  _onViewRevision: (revHash, reverse) =>
+    [leftRevHash, rightRevHash] = if reverse
+      [@leftRevHash, revHash]
+    else
+      [revHash, @rightRevHash]
+    
+    # order by created asc
+    [@leftRevHash, @rightRevHash] = @_orderRevHashes(leftRevHash, rightRevHash)
+    
+    GitRevisionView.showRevision(@editor, @leftRevHash, @rightRevHash)
+    @timeplot.setRevisions(@leftRevHash, @rightRevHash)
     
     
       
   _onEditorResize: =>
     @render()
     
+    
+  _orderRevHashes: (revHashA, revHashB) ->
+    unorderedRevs = [revHashA, revHashB]
+    return unorderedRevs unless @commits?.length > 0
+    
+    orderedRevs = []
+    for rev in @commits
+      if rev.id in unorderedRevs || rev.hash in unorderedRevs
+        orderedRevs.push rev.hash
+        break if orderedRevs.length >= 2
+        
+    return orderedRevs.reverse()    
+    
+      
+  
