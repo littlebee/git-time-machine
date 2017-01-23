@@ -32,22 +32,17 @@ class GitRevisionView
     options = _.defaults options,
       diff: false
     
+    return unless leftRevHash? || rightRevHash?
+    
     editor = editor.__gitTimeMachine.sourceEditor if editor.__gitTimeMachine?.sourceEditor?
     file = editor.getPath()
+    
+    promises = for revHash in [leftRevHash, rightRevHash]
+      @_loadRevision file, revHash
+      
+    Promise.all(promises).then (revisions)=>
+      @_showRevisions(file, editor, revisions, options)
 
-    fileContents = ""
-    stdout = (output) =>
-        fileContents += output
-    exit = (code) =>
-      if code is 0
-        @_showRevision(file, editor, leftRevHash, fileContents, options)
-      else
-        atom.notifications.addError "Could not retrieve revision for #{path.basename(file)} (#{code})"
-
-    @_loadRevision file, leftRevHash, stdout, exit
-
-
-  @isActivating: false
 
   # returns the pane and it's index (left to right) in workspace.getPanes()
   @findEditorPane: (editor) ->
@@ -58,19 +53,36 @@ class GitRevisionView
     return [null, null]
 
 
-  @_loadRevision: (file, hash, stdout, exit) ->
-    showArgs = [
-      "show",
-      "#{hash}:./#{path.basename(file)}"
-    ]
-    # console.log "calling git"
-    new BufferedProcess {
-      command: "git",
-      args: showArgs,
-      options: { cwd:path.dirname(file) },
-      stdout,
-      exit
-    }
+  @_loadRevision: (file, hash) ->
+    return new Promise (resolve, reject) =>
+      unless hash?
+        resolve(null)
+        return
+         
+      fileContents = ""
+      stdout = (output) ->
+          fileContents += output
+      exit = (code) =>
+        if code is 0
+          resolve 
+            revHash: hash
+            fileContents: fileContents
+        else
+          atom.notifications.addError "Could not retrieve revision for #{path.basename(file)} (#{code})"
+          reject(code)
+
+      showArgs = [
+        "show",
+        "#{hash}:./#{path.basename(file)}"
+      ]
+      # console.log "calling git"
+      new BufferedProcess {
+        command: "git",
+        args: showArgs,
+        options: { cwd:path.dirname(file) },
+        stdout,
+        exit
+      }
 
 
   @_getInitialLineNumber: (editor) ->
@@ -85,88 +97,136 @@ class GitRevisionView
       return lineNumber - 5
 
 
-  @_showRevision: (file, editor, revHash, fileContents, options={}) ->
+  @_showRevisions: (file, editor, revisions, options={}) ->
+    promises = for revision, index in revisions
+      @_showRevision(file, editor, revision, index == 0, options) 
+      
+    Promise.all(promises).then =>
+      [leftRevision, rightRevision] = revisions
+      return unless leftRevision?.editor?
+      rightRevEditor = if rightRevision? then rightRevision.editor else editor
+      
+      @splitDiff(leftRevision.editor, rightRevEditor)
+      @syncScroll(leftRevision.editor, rightRevEditor)
+
+  
+  @_showRevision: (file, editor, revision, isLeftRev, options={}) ->
+    return new Promise (resolve, reject) =>
+      if revision?
+        {revHash, fileContents} = revision
+      else
+        revHash = fileContents = null    # show current revision
+      
+      # editor (current rev) may have been destroyed, workspace.open will find or
+      # reopen it
+      promise = atom.workspace.open file,
+        activatePane: false
+        activateItem: true
+        searchAllPanes: true
+        
+      promise.then (sourceEditor) =>
+        unless revHash?
+          @_updateEditor(editor, sourceEditor, revHash, null, false)
+          revision?.editor = sourceEditor
+          resolve(sourceEditor)
+          return
+        
+        promise = @_createEditorForRevision(file, sourceEditor, revision, fileContents, isLeftRev)
+        promise.then (newEditor) => resolve(newEditor)
+        
+        
+  @_createEditorForRevision: (file, editor, revision, fileContents, isLeftRev) ->
+    return new Promise (resolve, reject) =>
+      outputFilePath = @_getOutputFilePath(file, revision)
+      tempContent = "Loading..." + editor.buffer?.lineEndingForRow(0)
+      fs.writeFileSync outputFilePath, tempContent
+      
+      @_destroyPreviousRevEditor(editor, revision, isLeftRev)
+    
+      # editor here should always be the original source doc editor (current rev)
+      [pane, paneIndex] = @findEditorPane(editor)
+      if isLeftRev 
+        if paneIndex <= 0
+          pane.splitLeft()
+          leftPane = atom.workspace.getPanes()[0]
+          leftPane.activate() unless leftPane == atom.workspace.getActivePane()
+        else 
+          leftPane = atom.workspace.getPanes()[paneIndex - 1]
+          leftPane.activate()
+        
+      promise = atom.workspace.open outputFilePath,
+        activateItem: true
+        searchAllPanes: false
+      promise.then (newTextEditor) =>
+        @_updateEditor(newTextEditor, editor, revision.revHash, fileContents, isLeftRev)
+        @isActivating = false
+        revision.editor = newTextEditor
+        resolve(newTextEditor)
+        
+        
+  @_destroyPreviousRevEditor: (editor, revision, isLeftRev) ->
+    return unless editor.__gitTimeMachine?
+    
+    if isLeftRev 
+      editorToDestroy = editor.__gitTimeMachine.leftRevEditor
+      editor.__gitTimeMachine.leftRevEditor = null
+      editor.__gitTimeMachine.leftRev = null
+    else
+      editorToDestroy = editor.__gitTimeMachine.rightRevEditor
+      editor.__gitTimeMachine.rightRevEditor = null
+      editor.__gitTimeMachine.rightRev = null
+      
+    editorToDestroy.destroy()
+  
+  
+  @_getOutputFilePath: (file, revision)->
     outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
-    fs.mkdir outputDir if not fs.existsSync outputDir
-    outputFilePath = "#{outputDir}/#{@FILE_PREFIX}#{path.basename(file)}"
-    outputFilePath += ".diff" if options.diff
-    tempContent = "Loading..." + editor.buffer?.lineEndingForRow(0)
-    
-    
-    fs.writeFile outputFilePath, tempContent, (error) =>
-      if not error
-        @isActivating = true
-        # editor (current rev) may have been destroyed, workspace.open will find or
-        # reopen it
-        promise = atom.workspace.open file,
-          activatePane: false
-          activateItem: true
-          searchAllPanes: true
-        promise.then (sourceEditor) =>
-          [pane, paneIndex] = @findEditorPane(editor)
-          if paneIndex == 0
-            pane.splitLeft()
-          else
-            leftPane = atom.workspace.getPanes()[paneIndex - 1]
-            leftPane.activate() unless leftPane == atom.workspace.getActivePane()
-            
-          promise = atom.workspace.open outputFilePath,
-            activateItem: true
-            searchAllPanes: false
-          promise.then (newTextEditor) =>
-            @_updateEditors(newTextEditor, editor, revHash, fileContents)
-            pane.activate()
-            @isActivating = false
-            
+    fs.mkdirSync outputDir if not fs.existsSync outputDir
+    return "#{outputDir}/#{@FILE_PREFIX}#{revision.revHash[-6..]} #{path.basename(file)}"
 
-
-
-
-  @_updateEditors: (newTextEditor, editor, revHash, fileContents) ->
+  
+  @_updateEditor: (newTextEditor, editor, revHash, fileContents, isLeftRev) ->
     lineEnding = editor.buffer?.lineEndingForRow(0) || "\n"
-    fileContents = fileContents.replace(/(\r\n|\n)/g, lineEnding)
-    newTextEditor.buffer.setPreferredLineEnding(lineEnding)
-    newTextEditor.setText(fileContents)
+    # revHash == null = we are updating the current source editor (curent rev)
+    if revHash? && fileContents?
+      fileContents = fileContents?.replace(/(\r\n|\n)/g, lineEnding)
+      newTextEditor.buffer.setPreferredLineEnding(lineEnding)
+      newTextEditor.setText(fileContents)
     
-    metadata = 
+    metadata = _.extend {}, editor.__gitTimeMachine ? {},
       sourceEditor: editor
-      leftRevEditor: newTextEditor
-      leftRevHash: revHash
+      
+    if isLeftRev
+      metadata.leftRevEditor = newTextEditor
+      metadata.leftRevHash = revHash
+    else
+      metadata.rightRevEditor = newTextEditor
+      metadata.rightRevHash = revHash
 
     newTextEditor.__gitTimeMachine = metadata
+    newTextEditor.onDidDestroy => @_onDidDestroyTimeMachineEditor(newTextEditor) 
     editor.__gitTimeMachine = metadata
     
     # HACK ALERT: this is prone to eventually fail. Don't show user change
     #  "would you like to save" message between changes to rev being viewed
-    newTextEditor.buffer.cachedDiskContents = fileContents
+    if revHash?
+      newTextEditor.buffer.cachedDiskContents = fileContents
+      
+    return metadata
+
     
-    @splitDiff(editor, newTextEditor)
-    @syncScroll(editor, newTextEditor)
-    @_affixTabTitle newTextEditor, revHash
+  @_onDidDestroyTimeMachineEditor: (editor) ->
+    fs.unlink(editor.getPath())
+  
 
-
-
-  @_affixTabTitle: (newTextEditor, revHash) ->
-    # speaking of hacks this is also hackish, there has to be a better way to change to
-    # tab title and unlinking it from the file name
-    $el = $(atom.views.getView(newTextEditor))
-    $tabTitle = $el.parents('atom-pane').find('li.tab.active .title')
-    titleText = $tabTitle.text()
-    if titleText.indexOf('@') >= 0
-      titleText = titleText.replace(/\@.*/, "@#{revHash}")
-    else
-      titleText += " @#{revHash}"
-
-    $tabTitle.text(titleText)
-
-
-  @splitDiff: (editor, newTextEditor) ->
+  @splitDiff: (leftEditor, rightEditor) ->
     editors =
-      editor1: newTextEditor    # the older revision
-      editor2: editor           # current rev
+      editor1: leftEditor    # the older revision
+      editor2: rightEditor           # current rev
 
+    # TODO : not sure why these seem reversed but the display is correct with green on the right
+    SplitDiff._setConfig 'leftEditorColor', 'red  e'
     SplitDiff._setConfig 'rightEditorColor', 'green'
-    SplitDiff._setConfig 'leftEditorColor', 'red'
     SplitDiff._setConfig 'diffWords', true
     SplitDiff._setConfig 'ignoreWhitespace', true
     SplitDiff._setConfig 'syncHorizontalScroll', true
@@ -187,17 +247,12 @@ class GitRevisionView
 
 
   # sync scroll to editor that we are show revision for
-  @syncScroll: (editor, newTextEditor) ->
+  @syncScroll: (leftEditor, rightEditor) ->
     # without the delay, the scroll position will fluctuate slightly beween
     # calls to editor setText
     _.delay =>
-      return if newTextEditor.isDestroyed()
-      newTextEditor.scrollToBufferPosition({row: @_getInitialLineNumber(editor), column: 0})
+      return if leftEditor.isDestroyed() || rightEditor.isDestroyed()
+      leftEditor.scrollToBufferPosition({row: @_getInitialLineNumber(rightEditor), column: 0})
     , 50
-    
-  
-  
-    
-      
     
     
