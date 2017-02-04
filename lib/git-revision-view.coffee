@@ -14,6 +14,10 @@ module.exports =
 class GitRevisionView
 
   @FILE_PREFIX = "TimeMachine - "
+  
+  # this is true when we are creating panes and editors for a revision. 
+  @isActivating = false
+  
   ###
     This code and technique was originally from git-history package,
     see https://github.com/jakesankey/git-history/blob/master/lib/git-history-view.coffee
@@ -98,9 +102,10 @@ class GitRevisionView
 
 
   @_showRevisions: (file, editor, revisions, options={}) ->
+    @isActivating = true
     promises = for revision, index in revisions
       @_showRevision(file, editor, revision, index == 0, options) 
-      
+  
     Promise.all(promises).then =>
       [leftRevision, rightRevision] = revisions
       return unless leftRevision?.editor?
@@ -108,6 +113,8 @@ class GitRevisionView
       
       @splitDiff(leftRevision.editor, rightRevEditor)
       @syncScroll(leftRevision.editor, rightRevEditor)
+      @isActivating = false
+
 
   
   @_showRevision: (file, editor, revision, isLeftRev, options={}) ->
@@ -153,13 +160,14 @@ class GitRevisionView
         else 
           leftPane = atom.workspace.getPanes()[paneIndex - 1]
           leftPane.activate()
+      else
+        pane.activate()
         
       promise = atom.workspace.open outputFilePath,
         activateItem: true
         searchAllPanes: false
       promise.then (newTextEditor) =>
         @_updateEditor(newTextEditor, editor, revision.revHash, fileContents, isLeftRev)
-        @isActivating = false
         revision.editor = newTextEditor
         resolve(newTextEditor)
         
@@ -172,11 +180,13 @@ class GitRevisionView
       editor.__gitTimeMachine.leftRevEditor = null
       editor.__gitTimeMachine.leftRev = null
     else
-      editorToDestroy = editor.__gitTimeMachine.rightRevEditor
+      # right rev could be the current.  don't destroy the source editor
+      unless editor.__gitTimeMachine.rightRevHash == null
+        editorToDestroy = editor.__gitTimeMachine.rightRevEditor
       editor.__gitTimeMachine.rightRevEditor = null
       editor.__gitTimeMachine.rightRev = null
       
-    editorToDestroy.destroy()
+    editorToDestroy?.destroy()
   
   
   @_getOutputFilePath: (file, revision)->
@@ -216,7 +226,9 @@ class GitRevisionView
 
     
   @_onDidDestroyTimeMachineEditor: (editor) ->
-    fs.unlink(editor.getPath())
+    filePath = editor.getPath()
+    return unless str.startsWith(path.basename(filePath), @FILE_PREFIX)
+    fs.unlink(filePath)
   
 
   @splitDiff: (leftEditor, rightEditor) ->

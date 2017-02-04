@@ -22,8 +22,9 @@ class GitTimeMachineView
 
 
   setEditor: (editor) ->
-    return if !editor? || editor == @lastActivatedEditor || GitRevisionView.isActivating
-    file = editor?.getPath()
+    return if !editor? || editor == @lastActivatedEditor || GitRevisionView.isActivating 
+      
+    file = editor.getPath()
     return unless file?
     
     @lastActivatedEditor = editor
@@ -109,9 +110,11 @@ class GitTimeMachineView
     
     if editor == sourceEditor
       leftRevEditor = sourceEditor.__gitTimeMachine.leftRevEditor
-      rightRevEditor = sourceEditor__gitTimeMachine.rightRevEditor
+      rightRevEditor = sourceEditor.__gitTimeMachine.rightRevEditor
       
-      revEditors = _.filter [leftRevEditor, rightRevEditor], (e) -> e != sourceEditor
+      revEditors = _.filter [leftRevEditor, rightRevEditor], (e) -> 
+        e != sourceEditor && !e.isDestroyed()
+        
       revEditor.destroy() for revEditor in revEditors
 
     
