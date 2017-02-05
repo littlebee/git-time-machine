@@ -142,7 +142,7 @@ class GitRevisionView
     SplitDiff._setConfig 'diffWords', true
     SplitDiff._setConfig 'ignoreWhitespace', true
     SplitDiff._setConfig 'syncHorizontalScroll', true
-
+    
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
       SplitDiff.updateDiff(editors) if editors?
@@ -155,6 +155,7 @@ class GitRevisionView
       editors = null;
       SplitDiff.disable(false)
 
+    SplitDiff.diffPanes()
     SplitDiff.updateDiff editors
 
 
