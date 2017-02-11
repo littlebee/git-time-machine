@@ -237,7 +237,7 @@ class GitRevisionView
       editor2: rightEditor           # current rev
 
     # TODO : not sure why these seem reversed but the display is correct with green on the right
-    SplitDiff._setConfig 'leftEditorColor', 'red  e'
+    SplitDiff._setConfig 'leftEditorColor', 'red'
     SplitDiff._setConfig 'rightEditorColor', 'green'
     SplitDiff._setConfig 'diffWords', true
     SplitDiff._setConfig 'ignoreWhitespace', true
