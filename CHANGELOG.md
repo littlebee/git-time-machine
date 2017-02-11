@@ -1,5 +1,11 @@
 
 <a name="1.2.3"></a>
+## [1.5.6](https://github.com/littlebee/git-time-machine/compare/1.5.5...1.5.6) (2017-02-11)
+
+
+### Bugs Fixed in this Release
+* [7297db4](https://github.com/littlebee/git-time-machine/commit/7297db4174168939154f6a375165663e4961741c)  fix sync scroll regression after split-diff upgrade
+
 ## [1.5.5](https://github.com/littlebee/git-time-machine/compare/1.5.4...1.5.5) (2017-02-5)
 
 
