@@ -141,7 +141,7 @@ class GitRevisionView
     SplitDiff._setConfig 'leftEditorColor', 'red'
     SplitDiff._setConfig 'diffWords', true
     SplitDiff._setConfig 'ignoreWhitespace', true
-    SplitDiff._setConfig 'syncHorizontalScroll', true
+    SplitDiff._setConfig 'scrollSyncType', 'Vertical + Horizontal'
     
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
