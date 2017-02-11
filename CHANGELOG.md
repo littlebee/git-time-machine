@@ -1,5 +1,11 @@
 
 <a name="1.2.3"></a>
+## [1.5.5](https://github.com/littlebee/git-time-machine/compare/1.5.4...1.5.5) (2017-02-5)
+
+
+### Other Commits
+* [872c5fe](https://github.com/littlebee/git-time-machine/commit/872c5fe799658c4dbdf6c7154984c4efcdbb4dc9) upgrade split-diff to 1.1.1. fixes #92 - less psudo selector deprecation
+
 ## [1.5.4](https://github.com/littlebee/git-time-machine/compare/1.5.3...1.5.4) (2016-11-318)
 merged pull request plus random bug fixes
 

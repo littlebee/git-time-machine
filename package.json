@@ -1,7 +1,7 @@
 {
   "name": "git-time-machine",
   "main": "./lib/git-time-machine",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Visually interact with git commit history for a file",
   "keywords": [
     "git",
@@ -25,7 +25,7 @@
     "d3": "3.5.6",
     "git-log-utils": "0.2.3",
     "moment": "2.10.6",
-    "split-diff": "https://github.com/mupchrch/split-diff/archive/v0.8.3.tar.gz",
+    "split-diff": "https://github.com/mupchrch/split-diff/archive/v1.1.1.tar.gz",
     "underscore-plus": "1.x"
   },
   "devDependencies": {}
