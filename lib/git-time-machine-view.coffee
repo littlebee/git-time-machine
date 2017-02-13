@@ -19,17 +19,17 @@ class GitTimeMachineView
       @render()
       
     @_bindWindowEvents()
-
+    
 
   setEditor: (editor) ->
-    return if !editor? || editor == @lastActivatedEditor || GitRevisionView.isActivating 
+    return if !editor? || editor == @lastActivatedEditor || GitRevisionView.isActivating() 
       
     file = editor.getPath()
     return unless file?
     
     @lastActivatedEditor = editor
     @render()
-    @loadExistingRevForEditor()
+    GitRevisionView.loadExistingRevForEditor(editor)
 
 
   render: () ->
@@ -70,8 +70,7 @@ class GitTimeMachineView
 
 
   gitCommitHistory: (editor=@lastActivatedEditor)->
-    # get the file name of the original file if on a timemachine editor
-    file = editor?.__gitTimeMachine?.sourceEditor?.getPath() || editor?.getPath()
+    file = editor?.getPath()
     return null unless file?
     
     try
@@ -87,49 +86,6 @@ class GitTimeMachineView
       return null
 
     return commits;
-
-
-  loadExistingRevForEditor: (editor=@lastActivatedEditor) ->
-    return unless editor.__gitTimeMachine?
-    
-    _.defer =>
-      return unless editor.__gitTimeMachine?
-      sourceEditor = editor.__gitTimeMachine.sourceEditor
-      
-      @activateTimeMachineEditorForEditor(sourceEditor) unless editor.isDestroyed()
-      
-      leftEditor = sourceEditor.__gitTimeMachine.leftRevEditor 
-      rightEditor = sourceEditor.__gitTimeMachine.rightRevEditor 
-      GitRevisionView.splitDiff(leftEditor, rightEditor)
-      GitRevisionView.syncScroll(leftEditor, rightEditor)
-    
-    
-  destroyEditor: (editor=@lastActivatedEditor) ->
-    return unless editor.__gitTimeMachine?
-    sourceEditor = editor.__gitTimeMachine.sourceEditor
-    
-    if editor == sourceEditor
-      leftRevEditor = sourceEditor.__gitTimeMachine.leftRevEditor
-      rightRevEditor = sourceEditor.__gitTimeMachine.rightRevEditor
-      
-      revEditors = _.filter [leftRevEditor, rightRevEditor], (e) -> 
-        e != sourceEditor && !e.isDestroyed()
-        
-      revEditor.destroy() for revEditor in revEditors
-
-    
-  # editor should be the source editor
-  activateTimeMachineEditorForEditor: (sourceEditor) ->
-    return unless sourceEditor.__gitTimeMachine?
-    
-    leftRevEditor = sourceEditor.__gitTimeMachine.leftRevEditor
-    leftRevPane = GitRevisionView.findEditorPane(leftRevEditor)[0]
-    leftRevPane?.activateItem(leftRevEditor) unless leftRevEditor == @lastActivatedEditor
-    
-    rightRevEditor = sourceEditor.__gitTimeMachine.rightRevEditor
-    # the rightRevPane should always be the same pane as the source editor pane
-    rightRevPane = GitRevisionView.findEditorPane(sourceEditor)[0]
-    rightRevPane?.activateItem(rightRevEditor) unless rightRevEditor == @lastActivatedEditor
 
 
   _bindWindowEvents: () ->

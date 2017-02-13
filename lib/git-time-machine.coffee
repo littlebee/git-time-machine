@@ -16,7 +16,6 @@ module.exports = GitTimeMachine =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'git-time-machine:toggle': => @toggle()
     @subscriptions.add atom.workspace.onDidChangeActivePaneItem((editor) => @_onDidChangeActivePaneItem(editor))
-    @subscriptions.add atom.workspace.onWillDestroyPaneItem((paneInfo) => @_onWillDestroyPaneItem(paneInfo))
 
 
   deactivate: ->
@@ -46,8 +45,5 @@ module.exports = GitTimeMachine =
       @gitTimeMachineView.setEditor(editor)
     return
   
-  
-  _onWillDestroyPaneItem: (paneInfo) ->
-    @gitTimeMachineView.destroyEditor(paneInfo.item)
     
     
