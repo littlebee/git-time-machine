@@ -39,11 +39,18 @@ module.exports = class GitRevisionView
   
   activateTimeMachineEditorForEditor: (editor) ->
     return unless editor in [@leftRevEditor, @rightRevEditor, @sourceEditor]
+    
+    GitRevisionView._isActivating = true
     if editor == @leftRevEditor
       rightEditor = @rightRevEditor ? @sourceEditor
       @findEditorPane(rightEditor)[0].activateItem(rightEditor)
     else
       @findEditorPane(@leftRevEditor)[0].activateItem(@leftRevEditor)
+      
+    @syncScroll(@leftRevEditor, @rightRevEditor)
+    @splitDiff(@leftRevEditor, @rightRevEditor)
+    GitRevisionView._isActivating = false
+      
 
   
   showRevision: (@sourceEditor, leftRevHash, rightRevHash, options={}) ->
