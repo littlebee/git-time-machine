@@ -237,10 +237,13 @@ module.exports = class GitRevisionView
     return unless gitRevView?
 
     if editor in [gitRevView.leftRevEditor, gitRevView.rightRevEditor]
-      filePath = editor.getPath()
-      fs.unlink(filePath)
+      if editor != gitRevView.sourceEditor 
+        filePath = editor.getPath()
+        if filePath.match /\/git-time-machine\/TimeMachine \- /
+          fs.unlink(filePath)
+        else
+          console.warn "cowardly refusing to delete non gtm temp file: #{filePath}"
       delete editor.__gitTimeMachine
-    
     
     if editor == gitRevView.leftRevEditor
       unless gitRevView.rightRevEditor == gitRevView.sourceEditor
