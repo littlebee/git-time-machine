@@ -1,5 +1,12 @@
 
 <a name="1.2.3"></a>
+## [1.5.7](https://github.com/littlebee/git-time-machine/compare/1.5.6...1.5.7) (2017-03-26)
+Improved split-diff interaction.  Thank you, Walden!
+
+### Other Commits
+* [3430a15](https://github.com/littlebee/git-time-machine/commit/3430a15dae5e744b6b4f465f050ebb222db7eb74) Merge pull request #103 from waldnzwrld/waldnzwrld-patch-always-up-to-date-split-diff
+* [f5cb40d](https://github.com/littlebee/git-time-machine/commit/f5cb40d0f2ce5d437ed93a3b8b9edf725bae743a) Merge pull request #102 from waldnzwrld/waldnzwrld-patch-issues-97
+
 ## [1.5.6](https://github.com/littlebee/git-time-machine/compare/1.5.5...1.5.6) (2017-02-11)
 
 
