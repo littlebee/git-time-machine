@@ -256,12 +256,11 @@ module.exports = class GitRevisionView
       editor1: leftEditor    # the older revision
       editor2: rightEditor           # current rev
 
-    # TODO : not sure why these seem reversed but the display is correct with green on the right
-    SplitDiff._setConfig 'leftEditorColor', 'red'
-    SplitDiff._setConfig 'rightEditorColor', 'green'
-    SplitDiff._setConfig 'diffWords', true
-    SplitDiff._setConfig 'ignoreWhitespace', true
-    SplitDiff._setConfig 'scrollSyncType', 'Vertical + Horizontal'
+    if not SplitDiff._getConfig 'rightEditorColor' then SplitDiff._setConfig 'rightEditorColor', 'green'
+    if not SplitDiff._getConfig 'leftEditorColor' then SplitDiff._setConfig 'leftEditorColor', 'red'
+    if not SplitDiff._getConfig 'diffWords' then SplitDiff._setConfig 'diffWords', true
+    if not SplitDiff._getConfig 'ignoreWhitespace' then SplitDiff._setConfig 'ignoreWhitespace', true
+    if not SplitDiff._getConfig 'scrollSyncType' then SplitDiff._setConfig 'scrollSyncType', 'Vertical + Horizontal'
     
     SplitDiff.editorSubscriptions = new CompositeDisposable()
     SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
