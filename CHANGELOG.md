@@ -1,7 +1,7 @@
 
 <a name="1.2.3"></a>
 ## [1.5.8](https://github.com/littlebee/git-time-machine/compare/1.5.7...1.5.8) (2017-03-27)
-Improved split-diff interaction.  Thank you, Walden!
+
 
 ### Other Commits
 * [ac8794f](https://github.com/littlebee/git-time-machine/commit/ac8794f1db743a60f459d55ecf5195017c7977fd) revert to using fixed archive version of split-diff - fixes #106
