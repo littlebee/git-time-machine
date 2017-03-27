@@ -1,5 +1,11 @@
 
 <a name="1.2.3"></a>
+## [1.5.9](https://github.com/littlebee/git-time-machine/compare/1.5.8...1.5.9) (2017-03-27)
+republishing to apm
+
+### Other Commits
+* [c6b0e3c](https://github.com/littlebee/git-time-machine/commit/c6b0e3c0fe1f3953ba4ff83735f3d4fba8b7ab3b) fix CHANGELOG dupe.  apm published failed for some reason last time
+
 ## [1.5.8](https://github.com/littlebee/git-time-machine/compare/1.5.7...1.5.8) (2017-03-27)
 
 
