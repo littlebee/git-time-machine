@@ -34,9 +34,12 @@ module.exports = GitTimeMachine =
       @gitTimeMachineView.hide()
       @timelinePanel.hide()
     else
-      @timelinePanel.show()
-      @gitTimeMachineView.show()
-      @gitTimeMachineView.setEditor atom.workspace.getActiveTextEditor()
+      require('atom-package-deps').install('git-time-machine')
+        .then (->
+          @timelinePanel.show()
+          @gitTimeMachineView.show()
+          @gitTimeMachineView.setEditor atom.workspace.getActiveTextEditor()
+        ).bind(this)
 
 
   _onDidChangeActivePaneItem: (editor) ->
@@ -46,5 +49,4 @@ module.exports = GitTimeMachine =
     return
 
   consumeSplitDiff: (splitDiffService) ->
-    GitRevisionView = require './git-revision-view'
-    GitRevisionView.SplitDiffService = splitDiffService
+    require('./git-revision-view').SplitDiffService = splitDiffService
