@@ -44,3 +44,7 @@ module.exports = GitTimeMachine =
     if @timelinePanel.isVisible()
       @gitTimeMachineView.setEditor(editor)
     return
+
+  consumeSplitDiff: (splitDiffService) ->
+    GitRevisionView = require './git-revision-view'
+    GitRevisionView.SplitDiffService = splitDiffService
