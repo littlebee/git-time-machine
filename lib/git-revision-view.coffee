@@ -59,18 +59,6 @@ class GitRevisionView
     }
 
 
-  @_getInitialLineNumber: (editor) ->
-    editorEle = atom.views.getView editor
-    lineNumber = 0
-    if editor? && editor != ''
-      lineNumber = editorEle.getLastVisibleScreenRow()
-      # console.log "_getInitialLineNumber", lineNumber
-
-      # TODO: why -5?  this is what it took to actually sync the last line number
-      #    between two editors
-      return lineNumber - 5
-
-
   @_showRevision: (file, editor, revHash, fileContents, options={}) ->
     outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
     fs.mkdir outputDir if not fs.existsSync outputDir
