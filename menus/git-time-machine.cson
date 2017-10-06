@@ -2,7 +2,7 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Toggle git-time-machine view'
+      'label': 'Toggle Git Time Machine view'
       'command': 'git-time-machine:toggle'
     }
   ]
@@ -10,7 +10,7 @@
   {
     'label': 'Packages'
     'submenu': [
-      'label': 'git-time-machine'
+      'label': 'Git Time Machine'
       'submenu': [
         {
           'label': 'Toggle for current file'
