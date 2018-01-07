@@ -7,8 +7,6 @@ str = require('bumble-strings')
 {CompositeDisposable, BufferedProcess} = require "atom"
 {$} = require "atom-space-pen-views"
 
-SplitDiff = require 'split-diff'
-
 
 module.exports = class GitRevisionView
 
@@ -46,8 +44,7 @@ module.exports = class GitRevisionView
       @findEditorPane(rightEditor)[0].activateItem(rightEditor)
     else
       @findEditorPane(@leftRevEditor)[0].activateItem(@leftRevEditor)
-      
-    @syncScroll(@leftRevEditor, @rightRevEditor)
+    
     @splitDiff(@leftRevEditor, @rightRevEditor)
     GitRevisionView._isActivating = false
       
@@ -136,7 +133,6 @@ module.exports = class GitRevisionView
       [@leftRevEditor, @rightRevEditor] = editors
       @rightRevEditor ?= @sourceEditor
       
-      @syncScroll(@leftRevEditor, @rightRevEditor)
       @splitDiff(@leftRevEditor, @rightRevEditor)
       GitRevisionView._isActivating = false
 
@@ -172,8 +168,8 @@ module.exports = class GitRevisionView
     file = @sourceEditor.getPath()
     return new Promise (resolve, reject) =>
       outputFilePath = @_getOutputFilePath(file, revision, isLeftRev)
-      tempContent = "Loading..." + @sourceEditor.buffer?.lineEndingForRow(0)
-      fs.writeFileSync outputFilePath, tempContent
+      # tempContent = "Loading..." + @sourceEditor.buffer?.lineEndingForRow(0)
+      # fs.writeFileSync outputFilePath, tempContent
       
       # sourceEditor here should always be the original source doc editor (current rev)
       [sourceEditorPane, paneIndex] = @findEditorPane(@sourceEditor)
@@ -214,6 +210,9 @@ module.exports = class GitRevisionView
     if revHash? && fileContents?
       fileContents = fileContents?.replace(/(\r\n|\n)/g, lineEnding)
       newTextEditor.buffer.setPreferredLineEnding(lineEnding)
+      # HACK ALERT: this is prone to eventually fail. Don't show user change
+      #  "would you like to save" message between changes to rev being viewed
+      newTextEditor.buffer.cachedDiskContents = fileContents
       newTextEditor.setText(fileContents)
 
     newTextEditor.onDidDestroy => @_onDidDestroyTimeMachineEditor(newTextEditor) 
@@ -226,10 +225,7 @@ module.exports = class GitRevisionView
       
     newTextEditor.__gitTimeMachine = @sourceEditor.__gitTimeMachine = @
     
-    # HACK ALERT: this is prone to eventually fail. Don't show user change
-    #  "would you like to save" message between changes to rev being viewed
-    if revHash?
-      newTextEditor.buffer.cachedDiskContents = fileContents
+    
     
     
   _onDidDestroyTimeMachineEditor: (editor) ->
@@ -254,40 +250,11 @@ module.exports = class GitRevisionView
     gitRevView.sourceEditor.__gitTimeMachine = null
     
 
+  # starting in gtm 2.0; leftEditor = order version, rightEditor = new version
   splitDiff: (leftEditor, rightEditor) ->
-    editors =
-      editor1: leftEditor    # the older revision
-      editor2: rightEditor           # current rev
-
-    if not SplitDiff._getConfig 'rightEditorColor' then SplitDiff._setConfig 'rightEditorColor', 'green'
-    if not SplitDiff._getConfig 'leftEditorColor' then SplitDiff._setConfig 'leftEditorColor', 'red'
-    if not SplitDiff._getConfig 'diffWords' then SplitDiff._setConfig 'diffWords', true
-    if not SplitDiff._getConfig 'ignoreWhitespace' then SplitDiff._setConfig 'ignoreWhitespace', true
-    if not SplitDiff._getConfig 'scrollSyncType' then SplitDiff._setConfig 'scrollSyncType', 'Vertical + Horizontal'
+    @constructor.SplitDiffService?.diffEditors(leftEditor, rightEditor)
     
-    SplitDiff.editorSubscriptions = new CompositeDisposable()
-    SplitDiff.editorSubscriptions.add editors.editor1.onDidStopChanging =>
-      SplitDiff.updateDiff(editors) if editors?
-    SplitDiff.editorSubscriptions.add editors.editor2.onDidStopChanging =>
-      SplitDiff.updateDiff(editors) if editors?
-    SplitDiff.editorSubscriptions.add editors.editor1.onDidDestroy =>
-      editors = null;
-      SplitDiff.disable(false)
-    SplitDiff.editorSubscriptions.add editors.editor2.onDidDestroy =>
-      editors = null;
-      SplitDiff.disable(false)
-
-    SplitDiff.diffPanes()
-    SplitDiff.updateDiff editors
 
 
-  # sync scroll to editor that we are show revision for
-  syncScroll: (leftEditor, rightEditor) ->
-    # without the delay, the scroll position will fluctuate slightly beween
-    # calls to editor setText
-    _.delay =>
-      return if leftEditor.isDestroyed() || rightEditor.isDestroyed()
-      leftEditor.scrollToBufferPosition({row: @_getInitialLineNumber(rightEditor), column: 0})
-    , 50
     
     

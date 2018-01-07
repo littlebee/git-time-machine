@@ -20,13 +20,23 @@
     "atom": ">=1.0.0 <2.0.0"
   },
   "dependencies": {
+    "atom-package-deps": "^4.0.1",
     "atom-space-pen-views": "^2.0.3",
     "bumble-strings": "0.4.1",
     "d3": "3.5.6",
     "git-log-utils": "0.2.3",
     "moment": "2.10.6",
-    "split-diff": "https://github.com/mupchrch/split-diff/archive/v1.3.0.tar.gz",
     "underscore-plus": "1.x"
+  },
+  "package-deps": [
+    "split-diff:1.4.0"
+  ],
+  "consumedServices": {
+    "split-diff": {
+      "versions": {
+        "1.0.0": "consumeSplitDiff"
+      }
+    }
   },
   "devDependencies": {}
 }
