@@ -8,8 +8,10 @@ module.exports = class GitTimeplotPopup extends View
 
   @content = (commitData, editor, start, end) ->
     dateFormat = "MMM DD YYYY ha"
+    commitVerb = commitData.length > 0 ? "were" : "was"
+    commitSuffix = commitData.length > 0 ? "s" : ""
     @div class: "select-list popover-list git-timemachine-popup", =>
-      @h5 "There were #{commitData.length} commits between"
+      @h5 "There #{commitVerb} #{commitData.length} commit{#commitSuffix} between"
       @h6 "#{start.format(dateFormat)} and #{end.format(dateFormat)}"
       @ul =>
         for commit in commitData
@@ -66,4 +68,3 @@ module.exports = class GitTimeplotPopup extends View
   _onShowRevision: (evt) =>
     revHash = $(evt.target).closest('li').data('rev')
     RevisionView.showRevision(@editor, revHash)
-
