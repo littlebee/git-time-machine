@@ -168,8 +168,6 @@ module.exports = class GitRevisionView
     file = @sourceEditor.getPath()
     return new Promise (resolve, reject) =>
       outputFilePath = @_getOutputFilePath(file, revision, isLeftRev)
-      # tempContent = "Loading..." + @sourceEditor.buffer?.lineEndingForRow(0)
-      # fs.writeFileSync outputFilePath, tempContent
       
       # sourceEditor here should always be the original source doc editor (current rev)
       [sourceEditorPane, paneIndex] = @findEditorPane(@sourceEditor)
@@ -191,6 +189,7 @@ module.exports = class GitRevisionView
       promise.then (newTextEditor) =>
         @_updateEditor(newTextEditor, revision.revHash, fileContents, isLeftRev)
         revision.sourceEditor = newTextEditor
+        _.defer => sourceEditorPane.activate()
         resolve(newTextEditor)
         
         
