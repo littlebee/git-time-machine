@@ -1,5 +1,18 @@
 
 <a name="1.2.3"></a>
+## [1.5.9](https://github.com/littlebee/git-time-machine/compare/1.5.8...1.5.9) (2017-03-27)
+republishing to apm
+
+### Other Commits
+* [c6b0e3c](https://github.com/littlebee/git-time-machine/commit/c6b0e3c0fe1f3953ba4ff83735f3d4fba8b7ab3b) fix CHANGELOG dupe.  apm published failed for some reason last time
+
+## [1.5.8](https://github.com/littlebee/git-time-machine/compare/1.5.7...1.5.8) (2017-03-27)
+
+
+### Other Commits
+* [ac8794f](https://github.com/littlebee/git-time-machine/commit/ac8794f1db743a60f459d55ecf5195017c7977fd) revert to using fixed archive version of split-diff - fixes #106
+* [0fa5684](https://github.com/littlebee/git-time-machine/commit/0fa5684a22369b28294b95080500be3972ab368a) updated readme with trouble shooting instructions. closes #48
+
 ## [1.5.7](https://github.com/littlebee/git-time-machine/compare/1.5.6...1.5.7) (2017-03-26)
 Improved split-diff interaction.  Thank you, Walden!
 
