@@ -119,6 +119,16 @@ class GitTimeMachineView
   _renderTimeplot: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
     @timeplot.render(commits, @_onViewRevision)
+    
+    leftRevHash = null
+    rightRevHash = null
+    
+    if @lastActivatedEditor.__gitTimeMachine?
+      leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash
+      rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash
+    
+    @timeplot.setRevisions(leftRevHash, rightRevHash)    
+    
     return
 
 
