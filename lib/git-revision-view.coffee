@@ -10,7 +10,7 @@ str = require('bumble-strings')
 
 module.exports = class GitRevisionView
 
-  FILE_PREFIX: "TimeMachine - "
+  FILE_PREFIX: "Time Machine - "
   
   # this is true when we are creating panes and editors for a revision. 
   @isActivating: -> 
@@ -196,10 +196,11 @@ module.exports = class GitRevisionView
   _getOutputFilePath: (file, revision, isLeftRev)->
     outputDir = "#{atom.getConfigDirPath()}/git-time-machine"
     fs.mkdirSync outputDir if not fs.existsSync outputDir
-    leftOrRight = if isLeftRev then ' left: ' else ' right: '
+    leftOrRight = if isLeftRev then 'lrev' else 'rrev'
 
-    outputPath = "#{outputDir}/#{@FILE_PREFIX} #{path.basename(file)}"
-      
+    outputPath = "#{outputDir}/#{@FILE_PREFIX}#{revision.revHash} - #{path.basename(file)}"
+    outputPath = "#{outputDir}/#{leftOrRight}/#{@FILE_PREFIX}#{path.basename(file)}"
+    
     return outputPath
     
   
@@ -234,7 +235,8 @@ module.exports = class GitRevisionView
     if editor in [gitRevView.leftRevEditor, gitRevView.rightRevEditor]
       if editor != gitRevView.sourceEditor 
         filePath = editor.getPath()
-        if filePath.match /\/git-time-machine\/TimeMachine \- /
+        regex = new RegExp "\/git-time-machine\/.*#{FILE_PREFIX}"
+        if filePath.match regex
           fs.unlink(filePath)
         else
           console.warn "cowardly refusing to delete non gtm temp file: #{filePath}"
