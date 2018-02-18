@@ -70,6 +70,10 @@ class GitTimeMachineView
 
 
   gitCommitHistory: (editor=@lastActivatedEditor)->
+    return null unless editor?
+    if editor.__gitTimeMachine?.sourceEditor?
+      editor = editor.__gitTimeMachine.sourceEditor
+    
     file = editor?.getPath()
     return null unless file?
     
