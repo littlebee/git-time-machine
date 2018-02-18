@@ -26,7 +26,8 @@ module.exports = class GitRevisionView
 
   @showRevision: (sourceEditor, leftRevHash, rightRevHash) -> 
     if sourceEditor.__gitTimeMachine
-      sourceEditor.__gitTimeMachine.showRevision(sourceEditor, leftRevHash, rightRevHash)
+      sourceEditor.__gitTimeMachine.showRevision(sourceEditor.__gitTimeMachine.sourceEditor, 
+        leftRevHash, rightRevHash)
     else
       new GitRevisionView().showRevision(sourceEditor, leftRevHash, rightRevHash)
       
@@ -87,7 +88,9 @@ module.exports = class GitRevisionView
          
       fileContents = ""
       stdout = (output) ->
-          fileContents += output
+        fileContents += output
+      stderr = (output) ->
+        console.error "Error loading revision of file", output
       exit = (code) =>
         if code is 0
           resolve 
@@ -106,7 +109,8 @@ module.exports = class GitRevisionView
         command: "git",
         args: showArgs,
         options: { cwd:path.dirname(file) },
-        stdout,
+        stdout: stdout,
+        stderr: stderr,
         exit
       }
 
@@ -153,10 +157,10 @@ module.exports = class GitRevisionView
         searchAllPanes: true
         
       promise.then (sourceEditor) =>
-        @sourceEditor = sourceEditor
+        @sourceEditor ?= sourceEditor
         
         unless revHash?
-          resolve(sourceEditor)
+          resolve(@sourceEditor)
           return
         
         promise = @_createEditorForRevision(revision, fileContents, isLeftRev)
@@ -188,7 +192,7 @@ module.exports = class GitRevisionView
         
       promise.then (newTextEditor) =>
         @_updateEditor(newTextEditor, revision.revHash, fileContents, isLeftRev)
-        revision.sourceEditor = newTextEditor
+        revision.sourceEditor ?= newTextEditor
         _.defer => sourceEditorPane.activate()
         resolve(newTextEditor)
         
@@ -235,12 +239,11 @@ module.exports = class GitRevisionView
     if editor in [gitRevView.leftRevEditor, gitRevView.rightRevEditor]
       if editor != gitRevView.sourceEditor 
         filePath = editor.getPath()
-        regex = new RegExp "\/git-time-machine\/.*#{FILE_PREFIX}"
+        regex = new RegExp "\/git-time-machine\/.*#{@FILE_PREFIX}"
         if filePath.match regex
           fs.unlink(filePath)
         else
           console.warn "cowardly refusing to delete non gtm temp file: #{filePath}"
-      delete editor.__gitTimeMachine
     
     if editor == gitRevView.leftRevEditor
       unless gitRevView.rightRevEditor == gitRevView.sourceEditor
@@ -248,7 +251,10 @@ module.exports = class GitRevisionView
     else
       gitRevView.leftRevEditor.destroy()
     
-    gitRevView.sourceEditor.__gitTimeMachine = null
+    delete gitRevView.sourceEditor.__gitTimeMachine
+    delete gitRevView.leftRevEditor.__gitTimeMachine
+    delete gitRevView.rightRevEditor.__gitTimeMachine
+    delete editor.__gitTimeMachine
     
 
   # starting in gtm 2.0; leftEditor = order version, rightEditor = new version

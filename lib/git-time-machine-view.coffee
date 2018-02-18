@@ -139,16 +139,23 @@ class GitTimeMachineView
 
   
   _onViewRevision: (revHash, reverse) =>
-    [leftRevHash, rightRevHash] = if reverse
-      [@leftRevHash, revHash]
+    leftRevHash = null
+    rightRevHash = null
+    
+    if @lastActivatedEditor.__gitTimeMachine?
+      leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash ? null
+      rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash ? null
+      
+    if reverse
+      rightRevHash = revHash
     else
-      [revHash, @rightRevHash]
+      leftRevHash = revHash
     
     # order by created asc
-    [@leftRevHash, @rightRevHash] = @_orderRevHashes(leftRevHash, rightRevHash)
+    [leftRevHash, rightRevHash] = @_orderRevHashes(leftRevHash, rightRevHash)
     
-    GitRevisionView.showRevision(@lastActivatedEditor, @leftRevHash, @rightRevHash)
-    @timeplot.setRevisions(@leftRevHash, @rightRevHash)
+    GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash)
+    @timeplot.setRevisions(leftRevHash, rightRevHash)
     
     
       

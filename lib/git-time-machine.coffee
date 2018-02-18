@@ -48,5 +48,6 @@ module.exports = GitTimeMachine =
       @gitTimeMachineView.setEditor(editor)
     return
 
+
   consumeSplitDiff: (splitDiffService) ->
     require('./git-revision-view').SplitDiffService = splitDiffService
