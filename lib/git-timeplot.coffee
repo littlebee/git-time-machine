@@ -50,6 +50,7 @@ module.exports = class GitTimeplot
 
     @_renderHoverMarker()
     @_renderRevMarkers()
+    @_renderRevSelectors()
     @_bindMouseEvents()
 
     return @$timeplot;
@@ -57,7 +58,8 @@ module.exports = class GitTimeplot
   
   setRevisions: (@leftRevHash, @rightRevHash) ->
     @_renderRevMarkers()
-
+    @_renderRevSelectors()
+    
 
   _renderAxis: (svg) ->
     w = @$element.width()
@@ -137,6 +139,36 @@ module.exports = class GitTimeplot
     return unless commit?
     
     $revMarker.show().css 'left', @x(moment.unix(commit.authorDate).toDate())
+    
+    
+  _renderRevSelectors: () ->
+    _.delay =>
+      @_renderRevSelector('left')
+      @_renderRevSelector('right')
+    , 3000
+  
+  
+  # renders the select components in the SplitDiff bottom control panel
+  _renderRevSelector: (whichRev) ->
+    dateFormat = "MMM DD YYYY ha"
+    revHash = @["#{whichRev}RevHash"]
+    commit = @_findCommit(revHash)
+    return unless commit?
+    
+    commitDate = moment.unix(commit.authorDate).format(dateFormat)
+    # commitLabel = "#{commitDate} #{revHash}"  #takes up too much space with revHash
+    commitLabel = "#{commitDate}"
+    
+    $splitdiffElement = $(".tool-panel .split-diff-ui .mid")
+    $ourElement = $splitdiffElement.find(".timemachine-rev-select.#{whichRev}-rev")
+    unless $ourElement?.length > 0
+      $ourElement = $("<span class='timemachine-rev-select #{whichRev}-rev'/>")
+      if whichRev == 'left'
+        $splitdiffElement.prepend $ourElement
+      else
+        $splitdiffElement.append $ourElement
+    
+    $ourElement.text commitLabel
     
 
   _bindMouseEvents: () =>
