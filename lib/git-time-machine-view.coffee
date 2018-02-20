@@ -164,13 +164,18 @@ class GitTimeMachineView
     # order by created asc
     [leftRevHash, rightRevHash] = @_orderRevHashes(leftRevHash, rightRevHash)
     
-    GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash)
+    GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash, @_onRevisionClose)
     @timeplot.setRevisions(leftRevHash, rightRevHash)
     
     
       
   _onEditorResize: =>
     @render()
+    
+    
+  _onRevisionClose: =>
+    rightRevHash = leftRevHash = null
+    @timeplot.setRevisions(leftRevHash, rightRevHash)
     
     
   _orderRevHashes: (revHashA, revHashB) ->

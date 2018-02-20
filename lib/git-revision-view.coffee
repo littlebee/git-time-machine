@@ -24,12 +24,12 @@ module.exports = class GitRevisionView
         editor.__gitTimeMachine?.activateTimeMachineEditorForEditor(editor) 
 
 
-  @showRevision: (sourceEditor, leftRevHash, rightRevHash) -> 
+  @showRevision: (sourceEditor, leftRevHash, rightRevHash, onClose) -> 
     if sourceEditor.__gitTimeMachine
       sourceEditor.__gitTimeMachine.showRevision(sourceEditor.__gitTimeMachine.sourceEditor, 
         leftRevHash, rightRevHash)
     else
-      new GitRevisionView().showRevision(sourceEditor, leftRevHash, rightRevHash)
+      new GitRevisionView().showRevision(sourceEditor, leftRevHash, rightRevHash, onClose)
       
 
   leftRevEditor: null
@@ -51,10 +51,7 @@ module.exports = class GitRevisionView
       
 
   
-  showRevision: (@sourceEditor, leftRevHash, rightRevHash, options={}) ->
-    options = _.defaults options,
-      diff: false
-    
+  showRevision: (@sourceEditor, leftRevHash, rightRevHash, @onClose) ->
     return unless leftRevHash? || rightRevHash?
     file = @sourceEditor.getPath()
     
@@ -63,7 +60,7 @@ module.exports = class GitRevisionView
       
     Promise.all(promises).then (revisions)=>
       @revisions = revisions
-      @_showRevisions revisions, options
+      @_showRevisions revisions
       
     @sourceEditor.onDidDestroy => @_onDidDestroyTimeMachineEditor(@sourceEditor)
     @sourceEditor.__gitTimeMachine = @
@@ -128,10 +125,10 @@ module.exports = class GitRevisionView
 
 
   # revisions are the promise resolve from @_loadRevision()
-  _showRevisions: (revisions, options={}) ->
+  _showRevisions: (revisions) ->
     GitRevisionView._isActivating = true
     promises = for revision, index in revisions
-      @_showRevision(revision, index == 0, options) 
+      @_showRevision(revision, index == 0) 
   
     Promise.all(promises).then (editors) =>
       [@leftRevEditor, @rightRevEditor] = editors
@@ -142,7 +139,7 @@ module.exports = class GitRevisionView
 
 
   
-  _showRevision: (revision, isLeftRev, options={}) ->
+  _showRevision: (revision, isLeftRev) ->
     return new Promise (resolve, reject) =>
       if revision?
         {revHash, fileContents} = revision
@@ -230,9 +227,7 @@ module.exports = class GitRevisionView
     newTextEditor.__gitTimeMachine = @sourceEditor.__gitTimeMachine = @
     
     
-    
-    
-  _onDidDestroyTimeMachineEditor: (editor) ->
+  _onDidDestroyTimeMachineEditor: (editor) =>
     gitRevView = editor.__gitTimeMachine
     return unless gitRevView?
 
@@ -255,6 +250,8 @@ module.exports = class GitRevisionView
     delete gitRevView.leftRevEditor.__gitTimeMachine
     delete gitRevView.rightRevEditor.__gitTimeMachine
     delete editor.__gitTimeMachine
+    
+    _.defer => @onClose?()  # defer to allow setEditor to call through
     
 
   # starting in gtm 2.0; leftEditor = order version, rightEditor = new version

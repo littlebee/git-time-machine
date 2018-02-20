@@ -134,14 +134,17 @@ module.exports = class GitTimeplot
       @$element.append($revMarker)
     
     revHash = @["#{whichRev}RevHash"]
-    unless revHash?
-      $revMarker.show().css('right', 10)
+    commit = @_findCommit(revHash)
+    
+    unless commit?
+      # console.log "resetting revMarker", whichRev, revHash, commit
+      $revMarker.show().css({left: 'initial', right: 10})
       return
     
-    commit = @_findCommit(revHash)
-    return unless commit?
-    
-    $revMarker.show().css 'left', @x(moment.unix(commit.authorDate).toDate())
+    # console.log "setting revMarker", whichRev, revHash, commit
+    $revMarker.show().css 
+      left: @x(moment.unix(commit.authorDate).toDate())
+      right: 'initial'
     
     
   _renderRevSelectors: () ->
