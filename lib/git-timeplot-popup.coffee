@@ -5,8 +5,8 @@ module.exports = class GitTimeplotPopup extends View
 
   @content = (commitData, start, end) ->
     dateFormat = "MMM DD YYYY ha"
-    commitVerb = commitData.length > 0 ? "were" : "was"
-    commitSuffix = commitData.length > 0 ? "s" : ""
+    commitVerb = if commitData.length > 0 then "were" else "was"
+    commitSuffix = if commitData.length > 0 then "s" else ""
     @div class: "select-list popover-list git-timemachine-popup", =>
       @h5 "There #{commitVerb} #{commitData.length} commit#{commitSuffix} between"
       @h6 "#{start.format(dateFormat)} and #{end.format(dateFormat)}"

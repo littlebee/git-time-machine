@@ -5,6 +5,7 @@ moment = require 'moment'
 d3 = require 'd3'
 
 GitTimeplotPopup = require './git-timeplot-popup'
+GitRevSelectorPopup = require './git-revselector-popup'
 
 
 module.exports = class GitTimeplot
@@ -28,6 +29,8 @@ module.exports = class GitTimeplot
 
   # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
+  # @onViewRevision - callback method called when a revision is selected in the timeplot. Also passed
+  #               to GitRevSelector.   Sould probably be a constructor argument
   render: (@commitData, @onViewRevision) ->
     @popup?.remove()
 
@@ -142,6 +145,7 @@ module.exports = class GitTimeplot
     
     
   _renderRevSelectors: () ->
+    # have to allow suffient time for splitdiff to render
     _.delay =>
       @_renderRevSelector('left')
       @_renderRevSelector('right')
@@ -169,6 +173,11 @@ module.exports = class GitTimeplot
         $splitdiffElement.append $ourElement
     
     $ourElement.text commitLabel
+    
+    @["#{whichRev}RevPopup"]?.hide().remove()
+    @["#{whichRev}RevPopup"] = new GitRevSelectorPopup(commit, whichRev, $ourElement)
+    
+    return $ourElement
     
 
   _bindMouseEvents: () =>

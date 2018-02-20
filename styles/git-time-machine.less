@@ -132,6 +132,25 @@
   }
 } // .git-timemachine-popup
 
+
+.select-list.popover-list.git-timemachine-revselector-popup {
+  position: absolute;
+  z-index: 10;
+  width: 350px;
+  background: @base-background-color;
+  color: @text-color;
+
+  .header {
+    width: 100%;
+    overflow: hidden;
+    > div {
+      display: inline-block;
+      width: 30%;
+      margin-right: 10px;
+    }
+  }
+}
+
 // this element is located appended inside the split diff UI control panel
 .timemachine-rev-select {
   &.left-rev {
