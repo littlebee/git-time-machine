@@ -5,7 +5,7 @@ moment = require 'moment'
 d3 = require 'd3'
 
 GitTimeplotPopup = require './git-timeplot-popup'
-GitRevSelectorPopup = require './git-revselector-popup'
+GitRevSelector = require './git-rev-selector'
 
 
 module.exports = class GitTimeplot
@@ -15,7 +15,7 @@ module.exports = class GitTimeplot
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
-    @leftRevHash = undefined    # don't show a left rev marker until the user selects a rev
+    @leftRevHash = null  
     @rightRevHash = null
 
 
@@ -60,6 +60,11 @@ module.exports = class GitTimeplot
     
   
   setRevisions: (@leftRevHash, @rightRevHash) ->
+    # we don't want to show the left rev marker or rev selector at all until a left @leftRevHash is set
+    @leftRevHash = undefined unless @leftRevHash?
+    # we want to show right rev selector and marker for "Local Revision" when @rightRevHash is not set 
+    @rightRevHash = null unless @rightRevHash?
+    
     @_renderRevMarkers()
     @_renderRevSelectors()
     
@@ -156,33 +161,12 @@ module.exports = class GitTimeplot
   
   
   # renders the select components in the SplitDiff bottom control panel
-  _renderRevSelector: (whichRev) ->
-    dateFormat = "MMM DD YYYY ha"
-    revHash = @["#{whichRev}RevHash"]
+  _renderRevSelector: (leftOrRight) ->
+    revHash = @["#{leftOrRight}RevHash"]
     commit = @_findCommit(revHash)
-    return unless commit?
+    new GitRevSelector(leftOrRight, commit)
     
-    commitDate = moment.unix(commit.authorDate).format(dateFormat)
-    # commitLabel = "#{commitDate} #{revHash}"  #takes up too much space with revHash
-    commitLabel = "#{commitDate}"
     
-    $splitdiffElement = $(".tool-panel .split-diff-ui .mid")
-    $ourElement = $splitdiffElement.find(".timemachine-rev-select.#{whichRev}-rev")
-    unless $ourElement?.length > 0
-      $ourElement = $("<span class='timemachine-rev-select #{whichRev}-rev'/>")
-      if whichRev == 'left'
-        $splitdiffElement.prepend $ourElement
-      else
-        $splitdiffElement.append $ourElement
-    
-    $ourElement.text commitLabel
-    
-    @["#{whichRev}RevPopup"]?.hide().remove()
-    @["#{whichRev}RevPopup"] = new GitRevSelectorPopup(commit, whichRev, $ourElement)
-    
-    return $ourElement
-    
-
   _bindMouseEvents: () =>
     _this = @
     @$element.mouseenter (e) -> _this._onMouseenter(e)
@@ -281,7 +265,10 @@ module.exports = class GitTimeplot
     
   
   _findCommit: (revHash) ->
-    _.find @commitData, (d) -> d.id == revHash || d.hash == revHash
+    unless revHash?
+      return revHash # returns either null or undefined, whichever revHash is set to
+    
+    return _.find @commitData, (d) -> d.id == revHash || d.hash == revHash
     
 
   # return the nearest commit to hover marker or previous

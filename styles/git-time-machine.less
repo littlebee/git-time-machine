@@ -153,12 +153,9 @@
 
 // this element is located appended inside the split diff UI control panel
 .timemachine-rev-select {
-  &.left-rev {
-    margin-right: 40px;
-  }
-  &.right-rev {
-    margin-left: 40px;
-  }
+  display: inline-block;
+  // keeps the split-diff center buttons in the center when the rev label has diff lengths left and right
+  min-width: 200px;
 }
 
 

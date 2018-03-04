@@ -33,7 +33,7 @@ module.exports = class GitRevSelectorPopup extends View
     @appendTo atom.views.getView atom.workspace
     @_bindMouseEvents()
     @show()
-    _.delay @hide, 10000
+    _.delay @hide, 5000
     
     
   _bindMouseEvents: ->
