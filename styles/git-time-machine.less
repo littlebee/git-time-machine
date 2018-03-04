@@ -91,7 +91,7 @@
     position: absolute;
     z-index: 10;
     width: 400px;
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
     border: solid 4px @pane-item-border-color;
   }
@@ -99,6 +99,18 @@
   .controls {
     float: right;
   }
+  
+  .rev-scroller {
+    max-height: 240px;
+    overflow: scroll;
+    border-bottom: solid 1px @pane-item-border-color;
+  }
+  
+  .helper-text {
+    padding: 10px;
+  }
+  
+  
   ul {
     list-style-type: none;
   }
