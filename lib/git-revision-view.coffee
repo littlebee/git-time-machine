@@ -157,7 +157,15 @@ module.exports = class GitRevisionView
         @sourceEditor ?= sourceEditor
         
         unless revHash?
-          resolve(@sourceEditor)
+          unless isLeftRev
+            if @rightRevEditor? && @rightRevEditor != @sourceEditor
+              atom.workspace.open(@sourceEditor.getPath(),
+                activatePane: true
+                activateItem: true
+                searchAllPanes: true              
+              ).then =>
+                @rightRevEditor = @sourceEditor
+                resolve(@sourceEditor)
           return
         
         promise = @_createEditorForRevision(revision, fileContents, isLeftRev)
