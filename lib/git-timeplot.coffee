@@ -157,14 +157,22 @@ module.exports = class GitTimeplot
     _.delay =>
       @_renderRevSelector('left')
       @_renderRevSelector('right')
-    , 3000
+    , 1000
   
   
   # renders the select components in the SplitDiff bottom control panel
   _renderRevSelector: (leftOrRight) ->
     revHash = @["#{leftOrRight}RevHash"]
     commit = @_findCommit(revHash)
-    new GitRevSelector(leftOrRight, commit)
+    new GitRevSelector leftOrRight, commit,
+      => @_onRevSelectorNextPreviousRev(leftOrRight, -1),
+      => @_onRevSelectorNextPreviousRev(leftOrRight, +1)
+    
+    
+  _onRevSelectorNextPreviousRev: (leftOrRight, offset) =>
+    currentRevHash = @["#{leftOrRight}RevHash"]
+    adjacentRevHash = @_findAdjacentRevHash(currentRevHash, offset)
+    @_onViewRevision(adjacentRevHash, leftOrRight == 'right')
     
     
   _bindMouseEvents: () =>
@@ -264,11 +272,13 @@ module.exports = class GitTimeplot
     return [commits, tStart, tEnd];
     
   
-  _findCommit: (revHash) ->
+  _findCommit: (revHash, otherOutput={}) ->
     unless revHash?
       return revHash # returns either null or undefined, whichever revHash is set to
     
-    return _.find @commitData, (d) -> d.id == revHash || d.hash == revHash
+    return _.find @commitData, (d, index) -> 
+      otherOutput.index = index
+      d.id == revHash || d.hash == revHash
     
 
   # return the nearest commit to hover marker or previous
@@ -284,3 +294,17 @@ module.exports = class GitTimeplot
     nearestCommit =  @_getNearestCommit()
     if nearestCommit?
       @_onViewRevision(nearestCommit.id, reverse)
+      
+  
+  # offset is the chronological order, however commitData is in rev chron order
+  _findAdjacentRevHash: (revHash, offset) ->
+    findOutput = {}
+    commit = @_findCommit(revHash, findOutput)
+    unless commit? 
+      index = if offset <= 0 then 0 else @commitData.length - 1 
+      return @commitData[index].id
+    
+    # @commitData is in reverse chronological order 
+    return @commitData[findOutput.index - offset].id
+      
+    

@@ -28,7 +28,7 @@ module.exports = class GitRevSelector extends View
         @span commitLabel
         @rightButton()
 
-
+  
   @leftButton: (options={}) ->
     options = _.defaults options,
       click: '_onPreviousRevClick'
@@ -63,7 +63,9 @@ module.exports = class GitRevSelector extends View
       @revPopup = new GitRevSelectorPopup(commit, leftOrRight, @)
 
 
-  
+  detached: ->
+    @revPopup?.remove()
+
 
   _onPreviousRevClick: ->
     @onPreviousRevision?.apply(@, arguments)
