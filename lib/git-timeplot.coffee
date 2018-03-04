@@ -305,6 +305,6 @@ module.exports = class GitTimeplot
       return @commitData[index].id
     
     # @commitData is in reverse chronological order 
-    return @commitData[findOutput.index - offset].id
+    return @commitData[findOutput.index - offset]?.id
       
     
