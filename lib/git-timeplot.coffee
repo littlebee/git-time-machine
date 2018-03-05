@@ -10,14 +10,13 @@ GitRevSelector = require './git-rev-selector'
 
 module.exports = class GitTimeplot
 
-  constructor: (@element) ->
+  constructor: (@element, @onZoom) ->
     @$element = $(@element)
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
     @leftRevHash = null  
     @rightRevHash = null
-
 
   hide: () ->
     @popup?.remove()
@@ -38,25 +37,36 @@ module.exports = class GitTimeplot
     if @$timeplot.length <= 0
       @$timeplot = $("<div class='timeplot'>")
       @$element.append @$timeplot
+    
+    @$timeplot.text ""
 
     if @commitData.length <= 0
       @$timeplot.html("<div class='placeholder'>No commits, nothing to see here.</div>")
       return;
 
+    svgWidth = @$element.width()
+    if @zoom
+      svgWidth *= 5 
+      @$timeplot.append("<div style='width: #{svgWidth}px; height: 1px'/>")
+
     svg = d3.select(@$timeplot.get(0))
     .append("svg")
-    .attr("width", @$element.width())
+    .attr("width", svgWidth)
     .attr("height", 100)
 
-    @_renderAxis(svg)
+    @_renderAxis(svg, svgWidth)
     @_renderBlobs(svg)
 
     @_renderHoverMarker()
     @_renderRevMarkers()
     @_renderRevSelectors()
+    @_renderZoomControl()
     @_bindMouseEvents()
+  
+    overflow = if @zoom then "scroll" else "hidden"
+    _.defer => @$timeplot.css(width: @$element.width(), "overflow-x": overflow)
 
-    return @$timeplot;
+    return @$timeplot
     
   
   setRevisions: (@leftRevHash, @rightRevHash) ->
@@ -68,9 +78,13 @@ module.exports = class GitTimeplot
     @_renderRevMarkers()
     @_renderRevSelectors()
     
+    
+  setZoom: (zoom = false) ->
+    @zoom = zoom
+    @render(@commitData, @onViewRevision)
+    
 
-  _renderAxis: (svg) ->
-    w = @$element.width()
+  _renderAxis: (svg, w) ->
     h = 100
     left_pad = 20
     pad = 20
@@ -174,6 +188,22 @@ module.exports = class GitTimeplot
     adjacentRevHash = @_findAdjacentRevHash(currentRevHash, offset)
     @_onViewRevision(adjacentRevHash, leftOrRight == 'right')
     
+    
+  _renderZoomControl: () ->
+    $zoomButton = @$element.find('.gtm-zoom')
+    unless $zoomButton?.length > 0
+      $zoomButton = $("<button class='btn btn-small gtm-zoom'/>")
+      $zoomButton.click @_onZoomClick
+      $zoomButton.appendTo @$element
+    zoomText = if @zoom then "Zoom Out" else "Zoom In"
+    $zoomButton.text zoomText
+    
+    
+  _onZoomClick: (evt) =>
+    evt.preventDefault()
+    @zoom = !@zoom ? false
+    @onZoom?(@zoom)
+      
     
   _bindMouseEvents: () =>
     _this = @

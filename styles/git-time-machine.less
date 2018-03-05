@@ -7,11 +7,18 @@
 
 .git-time-machine {
   .timeplot {
+    overflow-x: auto;
+    width: 100%;
     .placeholder {
       height: 100px;
       text-align: center;
       vertical-align: middle;
     }
+  }
+  .gtm-zoom {
+    position: absolute;
+    right: 10px;
+    bottom: 2px;      
   }
   .close-handle {
     position: absolute;
@@ -37,6 +44,12 @@
     margin-bottom: 5px;
     text-align: center;
     font-size: 11px;  
+    
+    .gtm-zoom {
+      float: right;
+      margin-right: 30px;
+      margin-top: -6px;
+    }
   }
 
   .axis path,

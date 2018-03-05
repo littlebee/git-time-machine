@@ -41,7 +41,7 @@ class GitTimeMachineView
       @$element.text("")
       @_renderCloseHandle()
       @_renderTimeplot(@commits)
-      @_renderStats(@commits)
+      @_renderStats(@commits)      
 
     return @$element
 
@@ -117,16 +117,20 @@ class GitTimeMachineView
 
 
   _renderTimeplot: (commits) ->
-    @timeplot ||= new GitTimeplot(@$element)
+    @timeplot ||= new GitTimeplot(@$element, @_onZoom)
+
     @timeplot.render(commits, @_onViewRevision)
     
     leftRevHash = null
     rightRevHash = null
+    zoom = false
     
     if @lastActivatedEditor.__gitTimeMachine?
       leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash
       rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash
-    
+      zoom = @lastActivatedEditor.__gitTimeMachine.zoom
+      
+    @timeplot.setZoom(zoom)
     @timeplot.setRevisions(leftRevHash, rightRevHash)    
     
     return
@@ -168,6 +172,10 @@ class GitTimeMachineView
     @timeplot.setRevisions(leftRevHash, rightRevHash)
     
     
+  _onZoom: (isZoomed) =>
+    @lastActivatedEditor.__gitTimeMachine?.zoom = isZoomed
+    @timeplot.setZoom(isZoomed)
+    
       
   _onEditorResize: =>
     @render()
@@ -175,7 +183,7 @@ class GitTimeMachineView
     
   _onRevisionClose: =>
     rightRevHash = leftRevHash = null
-    @timeplot.setRevisions(leftRevHash, rightRevHash)
+    @timeplot.setRevisions(leftRevHash, rightRevHash, false)
     
     
   _orderRevHashes: (revHashA, revHashB) ->
