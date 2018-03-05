@@ -33,11 +33,10 @@ module.exports = class GitTimeplot
   render: (@commitData, @onViewRevision) ->
     @popup?.remove()
 
-    @$timeplot = @$element.find('.timeplot')
-    if @$timeplot.length <= 0
-      @$timeplot = $("<div class='timeplot'>")
-      @$element.append @$timeplot
-    
+    @$element.find('.timeplot').remove()
+    @$timeplot = $("<div class='timeplot'>")
+    @$element.prepend @$timeplot
+  
     @$timeplot.text ""
 
     if @commitData.length <= 0
@@ -47,7 +46,7 @@ module.exports = class GitTimeplot
     svgWidth = @$element.width()
     if @zoom
       svgWidth *= 5 
-      @$timeplot.append("<div style='width: #{svgWidth}px; height: 1px'/>")
+      
 
     svg = d3.select(@$timeplot.get(0))
     .append("svg")
@@ -64,8 +63,9 @@ module.exports = class GitTimeplot
     @_bindMouseEvents()
   
     overflow = if @zoom then "scroll" else "hidden"
-    _.defer => @$timeplot.css(width: @$element.width(), "overflow-x": overflow)
-
+    @$timeplot.width(@$element.width())
+    .css("overflow": overflow)
+    
     return @$timeplot
     
   
@@ -201,6 +201,7 @@ module.exports = class GitTimeplot
     
   _onZoomClick: (evt) =>
     evt.preventDefault()
+    evt.stopPropagation()
     @zoom = !@zoom ? false
     @onZoom?(@zoom)
       
@@ -221,9 +222,9 @@ module.exports = class GitTimeplot
   _onMousemove: (evt) ->
     relativeX = evt.clientX - @$element.offset().left
     if relativeX < @$hoverMarker.offset().left
-      @$hoverMarker.css('left', relativeX)
+      @$hoverMarker.css('left', relativeX + 1)
     else
-      @$hoverMarker.css('left', relativeX - @$hoverMarker.width())
+      @$hoverMarker.css('left', relativeX - @$hoverMarker.width() + 1)
 
     if @isMouseDown
       @_hidePopup(force: true)
