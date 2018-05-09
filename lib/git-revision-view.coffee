@@ -112,18 +112,6 @@ module.exports = class GitRevisionView
       }
 
 
-  _getInitialLineNumber: (editor) ->
-    editorEle = atom.views.getView editor
-    lineNumber = 0
-    if editor? && editor != ''
-      lineNumber = editorEle.getLastVisibleScreenRow()
-      # console.log "_getInitialLineNumber", lineNumber
-
-      # TODO: why -5?  this is what it took to actually sync the last line number
-      #    between two editors
-      return lineNumber - 5
-
-
   # revisions are the promise resolve from @_loadRevision()
   _showRevisions: (revisions) ->
     GitRevisionView._isActivating = true
@@ -240,26 +228,30 @@ module.exports = class GitRevisionView
   _onDidDestroyTimeMachineEditor: (editor) =>
     gitRevView = editor.__gitTimeMachine
     return unless gitRevView?
-
-    if editor in [gitRevView.leftRevEditor, gitRevView.rightRevEditor]
-      if editor != gitRevView.sourceEditor 
+    
+    leftEditor = gitRevView.leftRevEditor
+    rightEditor = gitRevView.rightRevEditor
+    sourceEditor = gitRevView.sourceEditor
+    
+    if editor in [leftEditor, rightEditor]
+      if editor != sourceEditor 
         filePath = editor.getPath()
         regex = new RegExp "\/git-time-machine\/.*#{@FILE_PREFIX}"
         if filePath.match regex
           fs.unlink(filePath)
         else
           console.warn "cowardly refusing to delete non gtm temp file: #{filePath}"
-    
-    if editor == gitRevView.leftRevEditor
-      unless gitRevView.rightRevEditor == gitRevView.sourceEditor
-        gitRevView.rightRevEditor.destroy()
-    else
-      gitRevView.leftRevEditor.destroy()
-    
+
     delete gitRevView.sourceEditor.__gitTimeMachine
     delete gitRevView.leftRevEditor.__gitTimeMachine
     delete gitRevView.rightRevEditor.__gitTimeMachine
     delete editor.__gitTimeMachine
+    
+    if editor == leftEditor
+      unless rightEditor == sourceEditor
+        rightEditor.destroy()
+    else
+      leftEditor.destroy()
     
     _.defer => @onClose?()  # defer to allow setEditor to call through
     
