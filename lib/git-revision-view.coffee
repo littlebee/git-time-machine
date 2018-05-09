@@ -258,7 +258,7 @@ module.exports = class GitRevisionView
 
   # starting in gtm 2.0; leftEditor = order version, rightEditor = new version
   splitDiff: (leftEditor, rightEditor) ->
-    @constructor.SplitDiffService?.diffEditors(leftEditor, rightEditor)
+    @constructor.SplitDiffService?.diffEditors(leftEditor, rightEditor, addedColorSide: 'right')
     
 
 
