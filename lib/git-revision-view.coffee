@@ -166,6 +166,8 @@ module.exports = class GitRevisionView
               ).then =>
                 @rightRevEditor = @sourceEditor
                 resolve(@sourceEditor)
+            else
+              resolve(@sourceEditor)
           return
         
         promise = @_createEditorForRevision(revision, fileContents, isLeftRev)
