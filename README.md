@@ -6,6 +6,7 @@ git-time-machine is a package for [Atom](https://atom.io/) that allows you to tr
 
 To open the timeplot, just use the keyboard shortcut <kbd>alt</kbd>+<kbd>t</kbd>.
 
+You can hold shift when clicking on the timeplot or popup to set the right side version.  If there is no left side version, or the version shift clicked is older than the left version, the older version should always display on the left because, as we all know, time travels from left to right. :)
 
 ## Troubleshooting
 
