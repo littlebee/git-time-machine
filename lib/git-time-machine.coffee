@@ -6,6 +6,7 @@ module.exports = GitTimeMachine =
   timelinePanel: null
   subscriptions: null
 
+
   activate: (state) ->
     @gitTimeMachineView = new GitTimeMachineView state.gitTimeMachineViewState
     @timelinePanel = atom.workspace.addBottomPanel(item: @gitTimeMachineView.getElement(), visible: false)
@@ -14,7 +15,10 @@ module.exports = GitTimeMachine =
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'git-time-machine:toggle': => @toggle()
+    @subscriptions.add atom.commands.add 'atom-workspace', 
+      'git-time-machine:toggle': => @toggle()
+      'core:cancel': () => @timelinePanel?.isVisible() && @toggle()
+    
     @subscriptions.add atom.workspace.onDidChangeActivePaneItem((editor) => @_onDidChangeActivePaneItem(editor))
 
 
