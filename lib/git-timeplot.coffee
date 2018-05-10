@@ -12,6 +12,7 @@ module.exports = class GitTimeplot
 
   constructor: (@element) ->
     @$element = $(@element)
+    @$closeHandle = @$element.find(".close-handle")
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
@@ -182,7 +183,14 @@ module.exports = class GitTimeplot
     @$element.mouseleave (e) -> _this._onMouseleave(e)
     @$element.mousedown (e) -> _this._onMousedown(e)
     @$element.mouseup (e) -> _this._onMouseup(e)
+    @$closeHandle.mouseenter (e) -> _this._onCloseHandleMouseenter(e)
+    @$closeHandle.mouseleave (e) -> _this._onCloseHandleMouseleave(e)
 
+  _onCloseHandleMouseenter: (evt) ->
+    @isMouseInCloseHandle = true
+
+  _onCloseHandleMouseleave: (evt) ->
+    @isMouseInCloseHandle = false
 
   _onMouseenter: (evt) ->
     @isMouseInElement = true
@@ -195,7 +203,9 @@ module.exports = class GitTimeplot
     else
       @$hoverMarker.css('left', relativeX - @$hoverMarker.width())
 
-    if @isMouseDown
+    if @isMouseInCloseHandle
+      @_hidePopup(force: true)
+    else if @isMouseDown
       @_hidePopup(force: true)
       @_debouncedViewNearestRevision(evt.shiftKey)
     else

@@ -10,14 +10,13 @@ GitRevisionView = require './git-revision-view'
 
 NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a git repository"]
 
-module.exports =
-class GitTimeMachineView
+module.exports = class GitTimeMachineView
   constructor: (serializedState, options={}) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
     if options.editor?
       @setEditor(options.editor)
       @render()
-      
+
     @_bindWindowEvents()
     
 
@@ -55,8 +54,8 @@ class GitTimeMachineView
   destroy: ->
     @_unbindWindowEvents()
     @$element.remove()
-    
-    
+
+
   hide: ->
     @timeplot?.hide()   # so it knows to hide the popup
 
@@ -84,7 +83,7 @@ class GitTimeMachineView
         if str.weaklyHas(e.message, NOT_GIT_ERRORS)
           console.warn "#{file} not in a git repository"
           return null
-      
+
       atom.notifications.addError String e
       console.error e
       return null
@@ -93,9 +92,9 @@ class GitTimeMachineView
 
 
   _bindWindowEvents: () ->
-    $(window).on 'resize', @_onEditorResize 
-    
-    
+    $(window).on 'resize', @_onEditorResize
+
+
   _unbindWindowEvents: () ->
     $(window).off 'resize', @_onEditorResize
 
@@ -106,7 +105,7 @@ class GitTimeMachineView
 
 
   _renderCloseHandle: () ->
-    $closeHandle = $("<div class='close-handle'>X</div>")
+    $closeHandle = $("<i class='close-handle icon icon-x clickable'></i>")
     @$element.append $closeHandle
     $closeHandle.on 'mousedown', (e)->
       e.preventDefault()
@@ -114,6 +113,7 @@ class GitTimeMachineView
       e.stopPropagation()
       # why not? instead of adding callback, our own event...
       atom.commands.dispatch(atom.views.getView(atom.workspace), "git-time-machine:toggle")
+    atom.tooltips.add($closeHandle, { title: "Close Panel", delay: 0 })
 
 
   _renderTimeplot: (commits) ->
