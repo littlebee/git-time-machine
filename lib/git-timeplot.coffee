@@ -5,8 +5,7 @@ moment = require 'moment'
 d3 = require 'd3'
 
 GitTimeplotPopup = require './git-timeplot-popup'
-RevisionView = require './git-revision-view'
-
+GitRevSelector = require './git-rev-selector'
 
 
 module.exports = class GitTimeplot
@@ -17,6 +16,8 @@ module.exports = class GitTimeplot
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
+    @leftRevHash = null  
+    @rightRevHash = null
 
 
   hide: () ->
@@ -29,10 +30,10 @@ module.exports = class GitTimeplot
 
   # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
-  render: (@editor, @commitData) ->
+  # @onViewRevision - callback method called when a revision is selected in the timeplot. Also passed
+  #               to GitRevSelector.   Sould probably be a constructor argument
+  render: (@commitData, @onViewRevision) ->
     @popup?.remove()
-
-    @file = @editor.getPath()
 
     @$timeplot = @$element.find('.timeplot')
     if @$timeplot.length <= 0
@@ -52,9 +53,22 @@ module.exports = class GitTimeplot
     @_renderBlobs(svg)
 
     @_renderHoverMarker()
+    @_renderRevMarkers()
+    @_renderRevSelectors()
+    @_bindMouseEvents()
 
     return @$timeplot;
-
+    
+  
+  setRevisions: (@leftRevHash, @rightRevHash) ->
+    # we don't want to show the left rev marker or rev selector at all until a left @leftRevHash is set
+    @leftRevHash = undefined unless @leftRevHash?
+    # we want to show right rev selector and marker for "Local Revision" when @rightRevHash is not set 
+    @rightRevHash = null unless @rightRevHash?
+    
+    @_renderRevMarkers()
+    @_renderRevSelectors()
+    
 
   _renderAxis: (svg) ->
     w = @$element.width()
@@ -101,13 +115,68 @@ module.exports = class GitTimeplot
     .attr("r", (d) -> r(d.linesAdded + d.linesDeleted || 0))
 
 
-  # hover marker is the green vertical line that follows the mouse on the timeplot
+  # hover marker is the gray vertical line that follows the mouse on the timeplot
   _renderHoverMarker: () ->
     @$hoverMarker = @$element.find('.hover-marker')
     unless @$hoverMarker.length > 0
       @$hoverMarker = $("<div class='hover-marker'>")
       @$element.append(@$hoverMarker)
 
+
+  _renderRevMarkers: () ->
+    @_renderRevMarker('left')
+    @_renderRevMarker('right')
+    
+    if @_leftRev 
+      # we don't show the red marker until we have a left revision
+      @$element.find('.left-rev-marker').show()
+    
+    
+  # whichRev should be 'left' or 'right'
+  _renderRevMarker: (whichRev) ->
+    $revMarker = @$element.find(".#{whichRev}-rev-marker")
+    unless $revMarker.length > 0
+      $revMarker = $("<div class='#{whichRev}-rev-marker'>")
+      @$element.append($revMarker)
+    
+    revHash = @["#{whichRev}RevHash"]
+    commit = @_findCommit(revHash)
+    
+    unless commit?
+      # console.log "resetting revMarker", whichRev, revHash, commit
+      $revMarker.show().css({left: 'initial', right: 10})
+      return
+    
+    # console.log "setting revMarker", whichRev, revHash, commit
+    $revMarker.show().css 
+      left: @x(moment.unix(commit.authorDate).toDate())
+      right: 'initial'
+    
+    
+  _renderRevSelectors: () ->
+    # have to allow suffient time for splitdiff to render
+    _.delay =>
+      @_renderRevSelector('left')
+      @_renderRevSelector('right')
+    , 1000
+  
+  
+  # renders the select components in the SplitDiff bottom control panel
+  _renderRevSelector: (leftOrRight) ->
+    revHash = @["#{leftOrRight}RevHash"]
+    commit = @_findCommit(revHash)
+    new GitRevSelector leftOrRight, commit,
+      => @_onRevSelectorNextPreviousRev(leftOrRight, -1),
+      => @_onRevSelectorNextPreviousRev(leftOrRight, +1)
+    
+    
+  _onRevSelectorNextPreviousRev: (leftOrRight, offset) =>
+    currentRevHash = @["#{leftOrRight}RevHash"]
+    adjacentRevHash = @_findAdjacentRevHash(currentRevHash, offset)
+    @_onViewRevision(adjacentRevHash, leftOrRight == 'right')
+    
+    
+  _bindMouseEvents: () =>
     _this = @
     @$element.mouseenter (e) -> _this._onMouseenter(e)
     @$element.mousemove (e) -> _this._onMousemove(e)
@@ -138,7 +207,7 @@ module.exports = class GitTimeplot
       @_hidePopup(force: true)
     else if @isMouseDown
       @_hidePopup(force: true)
-      @_debouncedViewNearestRevision()
+      @_debouncedViewNearestRevision(evt.shiftKey)
     else
       @_debouncedRenderPopup()
 
@@ -153,11 +222,17 @@ module.exports = class GitTimeplot
   _onMousedown: (evt) ->
     @isMouseDown = true
     @_hidePopup(force: true)
-    @_debouncedViewNearestRevision()
+    @_debouncedViewNearestRevision(evt.shiftKey)
 
 
   _onMouseup: (evt) ->
     @isMouseDown = false
+    
+    
+  _onViewRevision: (revHash, reverse) =>
+    # pass along up the component stack. note that we don't update @leftRevHash and @rightRevHash until
+    # the container component calls setRevisions in response to this 
+    @onViewRevision(revHash, reverse)
 
 
   _renderPopup: () ->
@@ -173,7 +248,7 @@ module.exports = class GitTimeplot
 
     @popup?.hide().remove()
     [commits, start, end] = @_filterCommitData(@commitData)
-    @popup = new GitTimeplotPopup(commits, @editor, start, end)
+    @popup = new GitTimeplotPopup(commits, start, end, @_onViewRevision)
 
     left = @$hoverMarker.offset().left
     if left + @popup.outerWidth() + 10 > @$element.offset().left + @$element.width()
@@ -201,9 +276,20 @@ module.exports = class GitTimeplot
     relativeLeft = left - @$element.offset().left - 5
     tStart = moment(@x.invert(relativeLeft)).startOf('hour').subtract(1, 'minute')
     tEnd = moment(@x.invert(relativeLeft + 10)).endOf('hour').add(1, 'minute')
+    
     commits = _.filter @commitData, (c) -> moment.unix(c.authorDate).isBetween(tStart, tEnd)
     # console.log("gtm: inspecting #{commits.length} commits betwee #{tStart.toString()} - #{tEnd.toString()}")
     return [commits, tStart, tEnd];
+    
+  
+  _findCommit: (revHash, otherOutput={}) ->
+    unless revHash?
+      return revHash # returns either null or undefined, whichever revHash is set to
+    
+    return _.find @commitData, (d, index) -> 
+      otherOutput.index = index
+      d.id == revHash || d.hash == revHash
+    
 
   # return the nearest commit to hover marker or previous
   _getNearestCommit: () ->
@@ -214,7 +300,21 @@ module.exports = class GitTimeplot
       return _.find @commitData, (c) -> moment.unix(c.authorDate).isBefore(tEnd)
 
 
-  _viewNearestRevision: () ->
+  _viewNearestRevision: (reverse) ->
     nearestCommit =  @_getNearestCommit()
     if nearestCommit?
-      RevisionView.showRevision(@editor, nearestCommit.hash)
+      @_onViewRevision(nearestCommit.id, reverse)
+      
+  
+  # offset is the chronological order, however commitData is in rev chron order
+  _findAdjacentRevHash: (revHash, offset) ->
+    findOutput = {}
+    commit = @_findCommit(revHash, findOutput)
+    unless commit? 
+      index = if offset <= 0 then 0 else @commitData.length - 1 
+      return @commitData[index].id
+    
+    # @commitData is in reverse chronological order 
+    return @commitData[findOutput.index - offset]?.id
+      
+    

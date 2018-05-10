@@ -10,8 +10,7 @@ GitRevisionView = require './git-revision-view'
 
 NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a git repository"]
 
-module.exports =
-class GitTimeMachineView
+module.exports = class GitTimeMachineView
   constructor: (serializedState, options={}) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
     if options.editor?
@@ -19,25 +18,29 @@ class GitTimeMachineView
       @render()
 
     @_bindWindowEvents()
-
+    
 
   setEditor: (editor) ->
-    return unless editor != @editor
-    file = editor?.getPath()
-    return unless file? && !str.startsWith(path.basename(file), GitRevisionView.FILE_PREFIX)
-    [@editor, @file] = [editor, file]
+    return if !editor? || editor == @lastActivatedEditor || GitRevisionView.isActivating() 
+      
+    file = editor.getPath()
+    return unless file?
+    
+    @lastActivatedEditor = editor
     @render()
+    GitRevisionView.loadExistingRevForEditor(editor)
 
 
   render: () ->
-    commits = @gitCommitHistory()
-    unless @file? && commits?
+    @commits = @gitCommitHistory()
+    
+    unless @commits?
       @_renderPlaceholder()
     else
       @$element.text("")
       @_renderCloseHandle()
-      @_renderStats(commits)
-      @_renderTimeline(commits)
+      @_renderTimeplot(@commits)
+      @_renderStats(@commits)
 
     return @$element
 
@@ -65,8 +68,14 @@ class GitTimeMachineView
     return @$element.get(0)
 
 
-  gitCommitHistory: (file=@file)->
+  gitCommitHistory: (editor=@lastActivatedEditor)->
+    return null unless editor?
+    if editor.__gitTimeMachine?.sourceEditor?
+      editor = editor.__gitTimeMachine.sourceEditor
+    
+    file = editor?.getPath()
     return null unless file?
+    
     try
       commits = GitLog.getCommitHistory file
     catch e
@@ -80,8 +89,6 @@ class GitTimeMachineView
       return null
 
     return commits;
-
-
 
 
   _bindWindowEvents: () ->
@@ -109,10 +116,19 @@ class GitTimeMachineView
     atom.tooltips.add($closeHandle, { title: "Close Panel", delay: 0 })
 
 
-
-  _renderTimeline: (commits) ->
+  _renderTimeplot: (commits) ->
     @timeplot ||= new GitTimeplot(@$element)
-    @timeplot.render(@editor, commits)
+    @timeplot.render(commits, @_onViewRevision)
+    
+    leftRevHash = null
+    rightRevHash = null
+    
+    if @lastActivatedEditor.__gitTimeMachine?
+      leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash
+      rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash
+    
+    @timeplot.setRevisions(leftRevHash, rightRevHash)    
+    
     return
 
 
@@ -131,6 +147,48 @@ class GitTimeMachineView
     """
     return
 
-
+  
+  _onViewRevision: (revHash, reverse) =>
+    leftRevHash = null
+    rightRevHash = null
+    
+    if @lastActivatedEditor.__gitTimeMachine?
+      leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash ? null
+      rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash ? null
+      
+    if reverse
+      rightRevHash = revHash
+    else
+      leftRevHash = revHash
+    
+    # order by created asc
+    [leftRevHash, rightRevHash] = @_orderRevHashes(leftRevHash, rightRevHash)
+    
+    GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash, @_onRevisionClose)
+    @timeplot.setRevisions(leftRevHash, rightRevHash)
+    
+    
+      
   _onEditorResize: =>
     @render()
+    
+    
+  _onRevisionClose: =>
+    rightRevHash = leftRevHash = null
+    @timeplot.setRevisions(leftRevHash, rightRevHash)
+    
+    
+  _orderRevHashes: (revHashA, revHashB) ->
+    unorderedRevs = [revHashA, revHashB]
+    return unorderedRevs unless @commits?.length > 0
+    
+    orderedRevs = []
+    for rev in @commits
+      if rev.id in unorderedRevs || rev.hash in unorderedRevs
+        orderedRevs.push rev.hash
+        break if orderedRevs.length >= 2
+        
+    return orderedRevs.reverse()    
+    
+      
+  
