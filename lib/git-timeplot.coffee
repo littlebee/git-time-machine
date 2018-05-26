@@ -30,9 +30,10 @@ module.exports = class GitTimeplot
 
   # @commitData - array of javascript objects like those returned by GitUtils.getFileCommitHistory
   #               should be in reverse chron order
+  # @zoom - 1 to n zoom factor
   # @onViewRevision - callback method called when a revision is selected in the timeplot. Also passed
   #               to GitRevSelector.   Sould probably be a constructor argument
-  render: (@commitData, @onViewRevision) ->
+  render: (@commitData, @zoom, @onViewRevision) ->
     @popup?.remove()
 
     @$timeplot = @$element.find('.timeplot')
@@ -43,6 +44,8 @@ module.exports = class GitTimeplot
     if @commitData.length <= 0
       @$timeplot.html("<div class='placeholder'>No commits, nothing to see here.</div>")
       return;
+      
+    @$timeplot.width(@zoom * 100 + '%')
 
     svg = d3.select(@$timeplot.get(0))
     .append("svg")

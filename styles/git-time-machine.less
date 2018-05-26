@@ -77,6 +77,30 @@
   .right-rev-marker {
     .rev-marker(fade(@syntax-color-added, 80%););
   }
+  
+  .gtm-hz-scroller {
+    width: 100%;
+    overflow: scroll;
+    position: relative;
+  }  
+  .gtm-right-touch-area {
+    position: absolute;
+    top: 0px;
+    width: 0px; 
+    height: 0px; 
+    border-top: 50px solid transparent;
+    border-bottom: 50px solid transparent;
+    border-left: 20px solid fade(@pane-item-border-color, 80%);
+  }
+  .gtm-left-touch-area {
+    position: absolute;
+    top: 0px;
+    width: 0px; 
+    height: 0px; 
+    border-top: 50px solid transparent;
+    border-bottom: 50px solid transparent; 
+    border-right: 20px solid fade(@pane-item-border-color, 80%);       
+  }
 
 }
 

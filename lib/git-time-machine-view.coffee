@@ -7,10 +7,14 @@ moment = require('moment')
 GitLog = require 'git-log-utils'
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
+HzScroller = require './hz-scroller'
 
 NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a git repository"]
 
 module.exports = class GitTimeMachineView
+  
+  zoom: 1.5
+  
   constructor: (serializedState, options={}) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
     if options.editor?
@@ -117,8 +121,10 @@ module.exports = class GitTimeMachineView
 
 
   _renderTimeplot: (commits) ->
-    @timeplot ||= new GitTimeplot(@$element)
-    @timeplot.render(commits, @_onViewRevision)
+    @scroller ||= new HzScroller(@$element)
+    @timeplot ||= new GitTimeplot(@scroller.$element)
+    @timeplot.render(commits, @zoom, @_onViewRevision)
+    @scroller.render()
     
     leftRevHash = null
     rightRevHash = null
