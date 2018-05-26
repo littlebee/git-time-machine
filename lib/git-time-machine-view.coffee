@@ -44,7 +44,7 @@ module.exports = class GitTimeMachineView
       @$element.text("")
       @_renderCloseHandle()
       @_renderTimeplot(@commits)
-      @_renderStats(@commits)
+      @_renderStats(@commits)      
 
     return @$element
 
@@ -132,7 +132,7 @@ module.exports = class GitTimeMachineView
     if @lastActivatedEditor.__gitTimeMachine?
       leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash
       rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash
-    
+
     @timeplot.setRevisions(leftRevHash, rightRevHash)    
     
     return
@@ -172,9 +172,8 @@ module.exports = class GitTimeMachineView
     
     GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash, @_onRevisionClose)
     @timeplot.setRevisions(leftRevHash, rightRevHash)
-    
-    
-      
+
+
   _onEditorResize: =>
     @render()
     
@@ -182,8 +181,7 @@ module.exports = class GitTimeMachineView
   _onRevisionClose: =>
     rightRevHash = leftRevHash = null
     @timeplot.setRevisions(leftRevHash, rightRevHash)
-    
-    
+
   _orderRevHashes: (revHashA, revHashB) ->
     unorderedRevs = [revHashA, revHashB]
     return unorderedRevs unless @commits?.length > 0
