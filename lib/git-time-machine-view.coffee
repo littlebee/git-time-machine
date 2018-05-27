@@ -13,7 +13,25 @@ NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a g
 
 module.exports = class GitTimeMachineView
   
-  zoom: 1.5
+  zoomOptions: [
+    {
+      label: "1x",
+      value: 1
+    },{
+      label: "1.5x"
+      value: 1.5
+    },{
+      label: "2x"
+      value: 2
+    },{
+      label: "3x"
+      value: 3
+    },{
+      label: "4x"
+      value: 4
+    }
+  ]
+  zoom: 1
   
   constructor: (serializedState, options={}) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
@@ -44,7 +62,8 @@ module.exports = class GitTimeMachineView
       @$element.text("")
       @_renderCloseHandle()
       @_renderTimeplot(@commits)
-      @_renderStats(@commits)      
+      @_renderZoomSelector()
+      @_renderStats(@commits)
 
     return @$element
 
@@ -153,7 +172,29 @@ module.exports = class GitTimeMachineView
       </div>
     """
     return
+    
+    
+  _renderZoomSelector: () ->
+    $div = $("<div  class='gtm-zoom-selector'>")
+    $label = $("<label>zoom: </label>")
+    $select = $("<select>")
+    $div.append($label)
+    $div.append($select)
+    
+    for option in @zoomOptions
+      $option = $("<option>#{option.label}</option>")
+      $option.attr('selected', true) if option.value == @zoom
+      $select.append $option
+    
+    $select.on "change.gtmZoom", @_onZoomChange
+    
+    @$element.append $div
 
+
+  _onZoomChange: (evt) =>
+    @zoom = @zoomOptions[evt.target.selectedIndex].value
+    @render()
+    
   
   _onViewRevision: (revHash, reverse) =>
     leftRevHash = null
