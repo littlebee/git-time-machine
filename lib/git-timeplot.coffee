@@ -168,7 +168,8 @@ module.exports = class GitTimeplot
   _renderRevSelector: (leftOrRight) ->
     revHash = @["#{leftOrRight}RevHash"]
     commit = @_findCommit(revHash)
-    new GitRevSelector leftOrRight, commit,
+    @["#{leftOrRight}RevSelector"]?.destroy()
+    @["#{leftOrRight}RevSelector"] = new GitRevSelector leftOrRight, commit,
       => @_onRevSelectorNextPreviousRev(leftOrRight, -1),
       => @_onRevSelectorNextPreviousRev(leftOrRight, +1)
     

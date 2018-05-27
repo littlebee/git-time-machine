@@ -121,8 +121,8 @@ module.exports = class GitTimeMachineView
 
 
   _renderTimeplot: (commits) ->
-    @scroller ||= new HzScroller(@$element)
-    @timeplot ||= new GitTimeplot(@scroller.$element)
+    @scroller = new HzScroller(@$element)
+    @timeplot = new GitTimeplot(@scroller.$element)
     @timeplot.render(commits, @zoom, @_onViewRevision)
     @scroller.render()
     @scroller.scrollFarRight()
