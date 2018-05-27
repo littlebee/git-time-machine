@@ -145,9 +145,11 @@ module.exports = class GitTimeplot
     revHash = @["#{whichRev}RevHash"]
     commit = @_findCommit(revHash)
     
+    return if commit == undefined
+    
     unless commit?
       # console.log "resetting revMarker", whichRev, revHash, commit
-      $revMarker.show().css({left: 'initial', right: 10})
+      $revMarker.show().css({left: @$element.width() - 10})
       return
     
     # console.log "setting revMarker", whichRev, revHash, commit
