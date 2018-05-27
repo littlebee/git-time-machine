@@ -15,13 +15,23 @@ module.exports = class GitTimeplot
       @$element.on 'scroll.gtmHzScroller', @_onScroll
 
 
-  render: ->
+
+  render: (@initialScrollLeft=0) ->
     @_toggleTouchAreas()
+    @$element.scrollLeft(@initialScrollLeft)
     return @$element
 
 
   scrollFarRight: () ->
     @$element.scrollLeft(@_getChildWidth() - @$element.width())
+
+
+  getScrollLeft: () ->
+    return @$element.scrollLeft()
+
+
+  getScrollRight: () ->
+    return @$element.scrollLeft() + @$element.width()
 
 
   _onScroll: =>
@@ -39,8 +49,8 @@ module.exports = class GitTimeplot
       $touchArea = $("<div class='gtm-#{which}-touch-area'>")
       @$element.prepend($touchArea)
     
-    scrollLeft = @$element.scrollLeft()
-    relativeRight = @$element.scrollLeft() + @$element.width()
+    scrollLeft = @getScrollLeft()
+    relativeRight = @getScrollRight()
     
     {shouldHide, areaLeft} = switch which
       when 'left'

@@ -55,13 +55,14 @@ module.exports = class GitTimeMachineView
 
   render: () ->
     @commits = @gitCommitHistory()
-    
+    scrollLeft = @scroller?.getScrollLeft() ? 0
+
     unless @commits?
       @_renderPlaceholder()
     else
       @$element.text("")
       @_renderCloseHandle()
-      @_renderTimeplot(@commits)
+      @_renderTimeplot(@commits, scrollLeft)
       @_renderZoomSelector()
       @_renderStats(@commits)
 
@@ -139,12 +140,12 @@ module.exports = class GitTimeMachineView
     atom.tooltips.add($closeHandle, { title: "Close Panel", delay: 0 })
 
 
-  _renderTimeplot: (commits) ->
+  _renderTimeplot: (commits, scrollLeft) ->
     @scroller = new HzScroller(@$element)
     @timeplot = new GitTimeplot(@scroller.$element)
     @timeplot.render(commits, @zoom, @_onViewRevision)
-    @scroller.render()
-    @scroller.scrollFarRight()
+    @scroller.render(scrollLeft)
+    # @scroller.scrollFarRight()
     
     leftRevHash = null
     rightRevHash = null
@@ -224,6 +225,8 @@ module.exports = class GitTimeMachineView
     rightRevHash = leftRevHash = null
     @timeplot.setRevisions(leftRevHash, rightRevHash)
 
+
+  # accepts revHashs or commit IDs, returns sorted by created asc
   _orderRevHashes: (revHashA, revHashB) ->
     unorderedRevs = [revHashA, revHashB]
     return unorderedRevs unless @commits?.length > 0
