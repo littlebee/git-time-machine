@@ -125,6 +125,7 @@ module.exports = class GitTimeMachineView
     @timeplot ||= new GitTimeplot(@scroller.$element)
     @timeplot.render(commits, @zoom, @_onViewRevision)
     @scroller.render()
+    @scroller.scrollFarRight()
     
     leftRevHash = null
     rightRevHash = null

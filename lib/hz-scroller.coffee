@@ -12,7 +12,7 @@ module.exports = class GitTimeplot
     unless @$element?.length > 0
       @$element = $("<div class='#{@className}'>")
       @$parentElement.append @$element
-      @$element.on 'scroll.gtmHzScroller', @_debouncedOnScroll
+      @$element.on 'scroll.gtmHzScroller', @_onScroll
 
 
   render: ->
@@ -20,40 +20,41 @@ module.exports = class GitTimeplot
     return @$element
 
 
+  scrollFarRight: () ->
+    @$element.scrollLeft(@_getChildWidth() - @$element.width())
+
+
   _onScroll: =>
     @_toggleTouchAreas()
 
 
   _toggleTouchAreas: ->
-    @_toggleLeftTouchArea()
-    @_toggleRightTouchArea()
+    @_toggleTouchArea('left')
+    @_toggleTouchArea('right')
 
 
-  _toggleLeftTouchArea: ->
-    $leftTouchArea = @$element.find('.gtm-left-touch-area')
-    unless $leftTouchArea.length > 0
-      $leftTouchArea = $('<div class="gtm-left-touch-area">')
-      @$element.prepend($leftTouchArea)
-    scrollLeft = @$element.scrollLeft()
-    if scrollLeft == 0
-      $leftTouchArea.hide()
-    else
-      $leftTouchArea.css({left: scrollLeft})
-      $leftTouchArea.show()
-
-
-  _toggleRightTouchArea: ->
-    $rightTouchArea = @$element.find('.gtm-right-touch-area')
-    unless $rightTouchArea.length > 0
-      $rightTouchArea = $('<div class="gtm-right-touch-area">')
-      @$element.append($rightTouchArea)
+  _toggleTouchArea: (which)->
+    $touchArea = @$element.find(".gtm-#{which}-touch-area")
+    unless $touchArea.length > 0
+      $touchArea = $("<div class='gtm-#{which}-touch-area'>")
+      @$element.prepend($touchArea)
     
+    scrollLeft = @$element.scrollLeft()
     relativeRight = @$element.scrollLeft() + @$element.width()
-    if relativeRight >= @_getChildWidth() - 10
-      $rightTouchArea.hide()
+    
+    {shouldHide, areaLeft} = switch which
+      when 'left'
+        shouldHide: scrollLeft == 0
+        areaLeft: scrollLeft
+      when 'right'
+        shouldHide: relativeRight >= @_getChildWidth() - 10
+        areaLeft: relativeRight - 20
+    
+    if shouldHide
+      $touchArea.hide()
     else
-      $rightTouchArea.show()
-      $rightTouchArea.css({left: relativeRight - 20})
+      $touchArea.css({left: areaLeft})
+      $touchArea.show()
 
 
   _getChildWidth: ->

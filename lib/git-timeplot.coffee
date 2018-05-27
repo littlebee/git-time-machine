@@ -10,9 +10,9 @@ GitRevSelector = require './git-rev-selector'
 
 module.exports = class GitTimeplot
 
-  constructor: (@element) ->
-    @$element = $(@element)
-    @$closeHandle = @$element.find(".close-handle")
+  constructor: (parentElement) ->
+    @$parentElement = $(parentElement)
+    @$closeHandle = @$parentElement.find(".close-handle")
     @_debouncedRenderPopup = _.debounce(@_renderPopup, 50)
     @_debouncedHidePopup = _.debounce(@_hidePopup, 50)
     @_debouncedViewNearestRevision = _.debounce(@_viewNearestRevision, 100)
@@ -36,18 +36,18 @@ module.exports = class GitTimeplot
   render: (@commitData, @zoom, @onViewRevision) ->
     @popup?.remove()
 
-    @$timeplot = @$element.find('.timeplot')
-    if @$timeplot.length <= 0
-      @$timeplot = $("<div class='timeplot'>")
-      @$element.append @$timeplot
+    @$element = @$parentElement.find('.timeplot')
+    if @$element.length <= 0
+      @$element = $("<div class='timeplot'>")
+      @$parentElement.append @$element
 
     if @commitData.length <= 0
-      @$timeplot.html("<div class='placeholder'>No commits, nothing to see here.</div>")
+      @$element.html("<div class='placeholder'>No commits, nothing to see here.</div>")
       return;
       
-    @$timeplot.width(@zoom * 100 + '%')
+    @$element.width(@zoom * 100 + '%')
 
-    svg = d3.select(@$timeplot.get(0))
+    svg = d3.select(@$element.get(0))
     .append("svg")
     .attr("width", @$element.width())
     .attr("height", 100)
@@ -60,7 +60,7 @@ module.exports = class GitTimeplot
     @_renderRevSelectors()
     @_bindMouseEvents()
 
-    return @$timeplot;
+    return @$element;
     
   
   setRevisions: (@leftRevHash, @rightRevHash) ->
@@ -71,7 +71,7 @@ module.exports = class GitTimeplot
     
     @_renderRevMarkers()
     @_renderRevSelectors()
-    
+
 
   _renderAxis: (svg) ->
     w = @$element.width()
@@ -319,5 +319,4 @@ module.exports = class GitTimeplot
     
     # @commitData is in reverse chronological order 
     return @commitData[findOutput.index - offset]?.id
-      
-    
+
