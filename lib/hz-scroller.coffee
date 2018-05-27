@@ -26,6 +26,10 @@ module.exports = class GitTimeplot
     @$element.scrollLeft(@_getChildWidth() - @$element.width())
 
 
+  scrollFarLeft: () ->
+    @$element.scrollLeft(0)
+
+
   getScrollLeft: () ->
     return @$element.scrollLeft()
 
@@ -36,6 +40,12 @@ module.exports = class GitTimeplot
 
   _onScroll: =>
     @_toggleTouchAreas()
+    
+    
+  _onTouchClick: (which) =>
+    switch(which)
+     when "left" then @scrollFarLeft()
+     when "right" then @scrollFarRight()
 
 
   _toggleTouchAreas: ->
@@ -44,9 +54,10 @@ module.exports = class GitTimeplot
 
 
   _toggleTouchArea: (which)->
-    $touchArea = @$element.find(".gtm-#{which}-touch-area")
+    $touchArea = @$element.find(".gtm-touch-area.gtm-#{which}")
     unless $touchArea.length > 0
-      $touchArea = $("<div class='gtm-#{which}-touch-area'>")
+      $touchArea = $("<div class='gtm-touch-area gtm-#{which}'>")
+      $touchArea.on "click.gtmTouchArea", => @_onTouchClick(which)
       @$element.prepend($touchArea)
     
     scrollLeft = @getScrollLeft()
