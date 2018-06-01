@@ -27,8 +27,11 @@ module.exports = class GitTimeMachineView
       label: "3x"
       value: 3
     },{
-      label: "4x"
-      value: 4
+      label: "5x"
+      value: 5
+    },{
+      label: "8x"
+      value: 8
     }
   ]
   zoom: 1
