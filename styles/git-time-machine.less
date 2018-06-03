@@ -7,11 +7,22 @@
 
 .git-time-machine {
   .timeplot {
+    overflow: hidden;
+    width: 100%;
     .placeholder {
       height: 100px;
       text-align: center;
       vertical-align: middle;
     }
+  }
+  .gtm-zoom-selector {
+    position: absolute;
+    right: 10px;
+    bottom: 2px; 
+    
+    select {
+      margin-left: 5px;
+    }     
   }
   .close-handle {
     position: absolute;
@@ -34,6 +45,12 @@
     margin-bottom: 5px;
     text-align: center;
     font-size: 11px;  
+    
+    .gtm-zoom {
+      float: right;
+      margin-right: 30px;
+      margin-top: -6px;
+    }
   }
 
   .axis path,
@@ -76,6 +93,30 @@
 
   .right-rev-marker {
     .rev-marker(fade(@syntax-color-added, 80%););
+  }
+  
+  .gtm-hz-scroller {
+    width: 100%;
+    overflow: scroll;
+    position: relative;
+  }  
+  
+  .gtm-touch-area {
+    position: absolute;
+    top: 0px;
+    width: 0px; 
+    height: 0px; 
+    z-index: 1;
+  }
+  .gtm-touch-area.gtm-right {
+    border-top: 50px solid transparent;
+    border-bottom: 50px solid transparent;
+    border-left: 20px solid fade(@pane-item-border-color, 90%);
+  }
+  .gtm-touch-area.gtm-left {
+    border-top: 50px solid transparent;
+    border-bottom: 50px solid transparent; 
+    border-right: 20px solid fade(@pane-item-border-color, 90%);       
   }
 
 }
@@ -165,6 +206,11 @@
   display: inline-block;
   // keeps the split-diff center buttons in the center when the rev label has diff lengths left and right
   min-width: 200px;
+  
+  span {
+    margin: 0px 3px;
+  }
+  
 }
 
 .split-diff-ui .mid {

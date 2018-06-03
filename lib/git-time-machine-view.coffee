@@ -7,10 +7,35 @@ moment = require('moment')
 GitLog = require 'git-log-utils'
 GitTimeplot = require './git-timeplot'
 GitRevisionView = require './git-revision-view'
+HzScroller = require './hz-scroller'
 
 NOT_GIT_ERRORS = ['File not a git repository', 'is outside repository', "Not a git repository"]
 
 module.exports = class GitTimeMachineView
+  
+  zoomOptions: [
+    {
+      label: "1x",
+      value: 1
+    },{
+      label: "1.5x"
+      value: 1.5
+    },{
+      label: "2x"
+      value: 2
+    },{
+      label: "3x"
+      value: 3
+    },{
+      label: "5x"
+      value: 5
+    },{
+      label: "8x"
+      value: 8
+    }
+  ]
+  zoom: 1
+  
   constructor: (serializedState, options={}) ->
     @$element = $("<div class='git-time-machine'>") unless @$element
     if options.editor?
@@ -33,13 +58,15 @@ module.exports = class GitTimeMachineView
 
   render: () ->
     @commits = @gitCommitHistory()
-    
+    scrollLeft = @scroller?.getScrollLeft() ? 0
+
     unless @commits?
       @_renderPlaceholder()
     else
       @$element.text("")
       @_renderCloseHandle()
-      @_renderTimeplot(@commits)
+      @_renderTimeplot(@commits, scrollLeft)
+      @_renderZoomSelector()
       @_renderStats(@commits)
 
     return @$element
@@ -116,9 +143,12 @@ module.exports = class GitTimeMachineView
     atom.tooltips.add($closeHandle, { title: "Close Panel", delay: 0 })
 
 
-  _renderTimeplot: (commits) ->
-    @timeplot ||= new GitTimeplot(@$element)
-    @timeplot.render(commits, @_onViewRevision)
+  _renderTimeplot: (commits, scrollLeft) ->
+    @scroller = new HzScroller(@$element)
+    @timeplot = new GitTimeplot(@scroller.$element)
+    @timeplot.render(commits, @zoom, @_onViewRevision)
+    @scroller.render(scrollLeft)
+    # @scroller.scrollFarRight()
     
     leftRevHash = null
     rightRevHash = null
@@ -126,7 +156,7 @@ module.exports = class GitTimeMachineView
     if @lastActivatedEditor.__gitTimeMachine?
       leftRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[0]?.revHash
       rightRevHash = @lastActivatedEditor.__gitTimeMachine.revisions?[1]?.revHash
-    
+
     @timeplot.setRevisions(leftRevHash, rightRevHash)    
     
     return
@@ -146,7 +176,29 @@ module.exports = class GitTimeMachineView
       </div>
     """
     return
+    
+    
+  _renderZoomSelector: () ->
+    $div = $("<div  class='gtm-zoom-selector'>")
+    $label = $("<label>zoom: </label>")
+    $select = $("<select>")
+    $div.append($label)
+    $div.append($select)
+    
+    for option in @zoomOptions
+      $option = $("<option>#{option.label}</option>")
+      $option.attr('selected', true) if option.value == @zoom
+      $select.append $option
+    
+    $select.on "change.gtmZoom", @_onZoomChange
+    
+    @$element.append $div
 
+
+  _onZoomChange: (evt) =>
+    @zoom = @zoomOptions[evt.target.selectedIndex].value
+    @render()
+    
   
   _onViewRevision: (revHash, reverse) =>
     leftRevHash = null
@@ -166,9 +218,8 @@ module.exports = class GitTimeMachineView
     
     GitRevisionView.showRevision(@lastActivatedEditor, leftRevHash, rightRevHash, @_onRevisionClose)
     @timeplot.setRevisions(leftRevHash, rightRevHash)
-    
-    
-      
+
+
   _onEditorResize: =>
     @render()
     
@@ -176,8 +227,9 @@ module.exports = class GitTimeMachineView
   _onRevisionClose: =>
     rightRevHash = leftRevHash = null
     @timeplot.setRevisions(leftRevHash, rightRevHash)
-    
-    
+
+
+  # accepts revHashs or commit IDs, returns sorted by created asc
   _orderRevHashes: (revHashA, revHashB) ->
     unorderedRevs = [revHashA, revHashB]
     return unorderedRevs unless @commits?.length > 0

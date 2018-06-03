@@ -1,16 +1,16 @@
 
 <a name="1.2.3"></a>
 ## [2.0.0](https://github.com/littlebee/git-time-machine/compare/1.5.9...2.0.0) (2018-05-130)
-Big changes for V2:
+### Big changes for V2:
 
-    Oldest rev should open to the left of newer rev because, as we all know, time travels from left to right :)
+- Oldest rev should open to the left of newer rev because, as we all know, time travels from left to right :)
 
-New Features
+### New Features
 
-    Ability to compare any two points in time. Click on time plot or in hover popup to set the revision displayed in the left editor. Shift click on the time plot or in the hover popup will set the right editor version.
-    Ability to step back in time. git-time-machine adds a revision display and selector to the split-diff control bar to allow you to step forward and backward 1 step at a time
+- Ability to compare any two points in time. Click on time plot or in hover popup to set the revision displayed in the left editor. Shift click on the time plot or in the hover popup will set the right editor version.
+- Ability to step back in time. git-time-machine adds a revision display and selector to the split-diff control bar to allow you to step forward and backward 1 step at a time
 
-Plus a bunch of love
+### Plus a bunch of love
 
 Thank you to everyone who contributed to this release @mupchrch, @waldnzwrld, @chimit, @cbeninati, @UziTech, @Alhadis, @apetro, @maskott, @DSpeckhals, @stevelacy, @melvinsh
 

@@ -1,75 +1,92 @@
 
-{$, View} = require "atom-space-pen-views"
+{$} = require "atom-space-pen-views"
 _ = require 'underscore-plus'
 moment = require 'moment'
 
 GitRevSelectorPopup = require './git-revselector-popup'
 
 
-module.exports = class GitRevSelector extends View
+module.exports = class GitRevSelector
 
-  @content = (leftOrRight, commit) ->
+  constructor: (leftOrRight, commit, @onPreviousRevision, @onNextRevision) ->
+    $splitdiffElement = $(".tool-panel .split-diff-ui .mid")
+    $splitdiffElement.find(".timemachine-rev-select.#{leftOrRight}-rev").remove()
+    
+    @$element = $("<div class='timemachine-rev-select #{leftOrRight}-rev'>")
+    
+    if leftOrRight == 'left'
+      $splitdiffElement.prepend @$element
+    else
+      $splitdiffElement.append @$element
+    
+    if commit?
+      @revPopup = new GitRevSelectorPopup(commit, leftOrRight, @$element)
+
+    @render(leftOrRight, commit)
+    
+
+  render:  (leftOrRight, commit) ->
+    @$element.text('')
+    
     dateFormat = "MMM DD YYYY ha"
     commitLabel = ""
-    
     if commit?
       # commitLabel = "#{commitDate} #{revHash}"  #takes up too much space with revHash
       commitLabel = moment.unix(commit.authorDate).format(dateFormat)
 
-    @div class: "timemachine-rev-select #{leftOrRight}-rev", =>
-      if commit == undefined 
-        return ""
-      else if commit == null
-        @leftButton() 
-        @span "Local Version"
-        @rightButton disabled: true
-      else
-        @leftButton()
-        @span commitLabel
-        @rightButton()
+    return if commit == undefined
+    else if commit == null
+      @_renderLeftButton() 
+      @_renderVersionLabel("Local Version")
+      @_renderRightButton(disabled: true)
+    else
+      @_renderLeftButton()
+      @_renderVersionLabel(commitLabel)
+      @_renderRightButton()
 
   
-  @leftButton: (options={}) ->
-    options = _.defaults options,
-      click: '_onPreviousRevClick'
+  destroy: () ->
+    @$element.remove()
+    @revPopup?.remove()
     
-    @button " < ", options
+  
+  _renderLeftButton: (options={}) ->
+    options = _.defaults options,
+      click: @_onPreviousRevClick
+    
+    @_renderButton " < ", options
         
       
-  @rightButton: (options={}) ->
+  _renderRightButton: (options={}) ->
     options = _.defaults options,
-      click: '_onNextRevClick'
+      click: @_onNextRevClick
     
-    @button " > ", options
+    @_renderButton " > ", options
     
 
-  @button: (text, options) ->
+  _renderButton: (text, options={}) ->
     options = _.defaults options,
       class: 'btn btn-small'
+      click: null
+      disabled: false
     
-    @tag 'button', text, options
-
-      
-  initialize: (leftOrRight, commit, @onPreviousRevision, @onNextRevision) ->
-    $splitdiffElement = $(".tool-panel .split-diff-ui .mid")
-    $splitdiffElement.find(".timemachine-rev-select.#{leftOrRight}-rev").remove()
-    if leftOrRight == 'left'
-      $splitdiffElement.prepend @
-    else
-      $splitdiffElement.append @
+    $button = $("<button class='#{options.class}'>#{text}</button>") 
+    $button.attr('disabled', options.disabled)
+    if options.click?
+      $button.on 'click.gtmRevSelector', options.click
     
-    @revPopup?.hide().remove()
-    if commit?
-      @revPopup = new GitRevSelectorPopup(commit, leftOrRight, @)
+    @$element.append $button
 
 
-  detached: ->
-    @revPopup?.remove()
+  _renderVersionLabel: (label) ->
+    @$element.append $("<span>#{label}</span>")
 
 
-  _onPreviousRevClick: ->
+  _onPreviousRevClick: =>
     @onPreviousRevision?.apply(@, arguments)
     
   
-  _onNextRevClick: ->
+  _onNextRevClick: =>
     @onNextRevision?.apply(@, arguments)
+    
+    
